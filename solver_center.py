@@ -142,7 +142,6 @@ if __name__ == "__main__":
         ("NUM_SOFT_DEADLINE_PRODUCTS", format_tensor(NUM_SOFT_DEADLINE_PRODUCTS[e])),
         ("FREE_ORDER", format_tensor(FREE_ORDER)),
         ("DELTA", format_tensor(DELTA)),
-        ("VS_COEFFS_CENTER_FUNCTIONAL", format_tensor(VS_COEFFS_CENTER_FUNCTIONAL[e].tolist())),
     )
 
     print(tabulate(center_data, headers=["Parameter", "Value"],
@@ -158,6 +157,7 @@ if __name__ == "__main__":
             ("VS_DIRECTIVE_TERMS", format_tensor(VS_DIRECTIVE_TERMS[e].tolist())),
             ("VS_NUM_DIRECTIVE_PRODUCTS", format_tensor(VS_NUM_DIRECTIVE_PRODUCTS[e].tolist())),
             ("VS_COEFFS_ELEMENT_FUNCTIONAL", format_tensor(VS_COEFFS_ELEMENT_FUNCTIONAL[e].tolist())),
+            ("VS_COEFFS_CENTER_FUNCTIONAL", format_tensor(VS_COEFFS_CENTER_FUNCTIONAL[e].tolist())),
             ("VS_FINES_FOR_DEADLINE", format_tensor(VS_FINES_FOR_DEADLINE[e].tolist())),
             ("MS_AGGREGATED_PLAN_COSTS", format_tensor(MS_AGGREGATED_PLAN_COSTS[e].tolist())),
             ("VS_AGGREGATED_PLAN_TIMES", format_tensor(VS_AGGREGATED_PLAN_TIMES[e].tolist())),

@@ -136,10 +136,10 @@ def center_model():
 if __name__ == "__main__":
     center_data = (
         ("NUM_ELEMENTS", format_tensor(NUM_ELEMENTS)),
-        ("NUM_CONSTRAINTS", format_tensor(NUM_CONSTRAINTS[e])),
-        ("NUM_DECISION_VARIABLES", format_tensor(NUM_DECISION_VARIABLES[e])),
-        ("NUM_AGGREGATED_PRODUCTS", format_tensor(NUM_AGGREGATED_PRODUCTS[e])),
-        ("NUM_SOFT_DEADLINE_PRODUCTS", format_tensor(NUM_SOFT_DEADLINE_PRODUCTS[e])),
+        ("NUM_CONSTRAINTS", format_tensor(NUM_CONSTRAINTS)),
+        ("NUM_DECISION_VARIABLES", format_tensor(NUM_DECISION_VARIABLES)),
+        ("NUM_AGGREGATED_PRODUCTS", format_tensor(NUM_AGGREGATED_PRODUCTS)),
+        ("NUM_SOFT_DEADLINE_PRODUCTS", format_tensor(NUM_SOFT_DEADLINE_PRODUCTS)),
         ("FREE_ORDER", format_tensor(FREE_ORDER)),
         ("DELTA", format_tensor(DELTA)),
     )
@@ -152,7 +152,6 @@ if __name__ == "__main__":
         print(f"\nInput data for {e = }:")
 
         input_data = (
-            ("VS_AGGREGATED_PLAN_TIMES", format_tensor(VS_AGGREGATED_PLAN_TIMES[e].tolist())),
             ("VS_RESOURCE_CONSTRAINTS", format_tensor(VS_RESOURCE_CONSTRAINTS[e].tolist())),
             ("VS_DIRECTIVE_TERMS", format_tensor(VS_DIRECTIVE_TERMS[e].tolist())),
             ("VS_NUM_DIRECTIVE_PRODUCTS", format_tensor(VS_NUM_DIRECTIVE_PRODUCTS[e].tolist())),

@@ -1,0 +1,90 @@
+from typing import List, Optional, Tuple, Dict
+from solvers.base import BaseSolver
+from models.center import CenterConfig, CenterData
+from solvers.element.default import ElementSolver
+from typing import List, Optional, Tuple, Any
+import numpy as np
+from solvers.base import BaseSolver
+from models.element import ElementConfig, ElementData
+
+class CenterCriteria1Solver(BaseSolver):
+    """Implementation of the first optimization criteria for the center."""
+
+    def __init__(self, data: CenterData):
+        super().__init__()
+        self.data = data
+        self.y_e: List[List[Any]] = []
+        self.z_e: List[List[Any]] = []
+        self.t_0_e: List[List[Any]] = []
+
+    def setup_variables(self) -> None:
+        """Set up optimization variables."""
+        for e in range(len(self.data.elements)):
+            self.y_e.append([
+                self.solver.NumVar(0, self.solver.infinity(), f"y_{e}_{i}")
+                for i in range(len(self.data.coeffs_functional[e]))
+            ])
+            self.z_e.append([
+                self.solver.NumVar(0, self.solver.infinity(), f"z_{e}_{i}")
+                for i in range(len(self.data.elements[e].aggregated_plan_times))
+            ])
+            self.t_0_e.append([
+                self.solver.NumVar(0, self.solver.infinity(), f"t_0_{e}_{i}")
+                for i in range(len(self.data.elements[e].aggregated_plan_times))
+            ])
+
+    def setup_constraints(self) -> None:
+        """Set up optimization constraints."""
+        for e in range(len(self.data.elements)):
+            element = self.data.elements[e]
+
+            # Resource constraints
+            for i in range(len(element.resource_constraints)):
+                self.solver.Add(
+                    sum(element.aggregated_plan_costs[i][j] * self.y_e[e][j]
+                        for j in range(len(self.data.coeffs_functional[e])))
+                    <= element.resource_constraints[i]
+                )
+
+            # Time and deadline constraints
+            for i in range(len(element.aggregated_plan_times)):
+                T_i = self.t_0_e[e][i] + element.aggregated_plan_times[i] * self.y_e[e][i]
+                self.solver.Add(T_i - self.z_e[e][i] <= element.directive_terms[i])
+
+                if i != 0:
+                    self.solver.Add(
+                        self.t_0_e[e][i] >= self.t_0_e[e][i - 1] +
+                        sum(element.aggregated_plan_times[j] * self.y_e[e][j]
+                            for j in range(i))
+                    )
+
+            # Production constraints
+            for i in range(len(element.num_directive_products)):
+                self.solver.Add(self.y_e[e][i] >= element.num_directive_products[i])
+
+    def setup_objective(self) -> None:
+        """Set up the objective function."""
+        objective = self.solver.Objective()
+
+        for e in range(len(self.data.elements)):
+            for i in range(len(self.data.coeffs_functional[e])):
+                objective.SetCoefficient(
+                    self.y_e[e][i],
+                    float(self.data.coeffs_functional[e][i])
+                )
+
+            for i in range(len(self.data.elements[e].fines_for_deadline)):
+                objective.SetCoefficient(
+                    self.z_e[e][i],
+                    float(-self.data.elements[e].fines_for_deadline[i])
+                )
+
+        objective.SetMaximization()
+
+    def get_solution(self) -> Dict[str, List[List[float]]]:
+        """Extract the solution values."""
+        return {
+            'y_e': [[v.solution_value() for v in element] for element in self.y_e],
+            'z_e': [[v.solution_value() for v in element] for element in self.z_e],
+            't_0_e': [[v.solution_value() for v in element] for element in self.t_0_e]
+        }

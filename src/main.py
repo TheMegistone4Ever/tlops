@@ -1,12 +1,11 @@
 from data.config import SystemConfig
-from data.generator import DataGenerator
-from models.center import CenterConfig
 from solvers.center.criteria_1 import CenterCriteria1Solver
 from solvers.center.criteria_2 import CenterCriteria2Solver
-from utils.formatters import format_solution
 
 
 def main():
+    from data.generator import DataGenerator
+
     # Initialize system configuration
     system_config = SystemConfig()
 

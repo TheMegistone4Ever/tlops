@@ -1,7 +1,10 @@
-from typing import List, Optional, Tuple, Any
+from typing import List, Any, Dict
+
 import numpy as np
+
+from models.element import ElementData
 from solvers.base import BaseSolver
-from models.element import ElementConfig, ElementData
+from utils.assertions import assert_valid_dimensions, assert_non_negative
 
 
 class ElementSolver(BaseSolver):
@@ -9,6 +12,17 @@ class ElementSolver(BaseSolver):
 
     def __init__(self, element_id: int, coeffs_functional: np.ndarray, data: ElementData):
         super().__init__()
+        # Validate input dimensions
+        assert_valid_dimensions(
+            [coeffs_functional],
+            [(len(data.aggregated_plan_costs[0]),)],
+            ["coeffs_functional"]
+        )
+
+        # Validate non-negative coefficients
+        for i, coeff in enumerate(coeffs_functional):
+            assert_non_negative(coeff, f"coeffs_functional[{i}]")
+
         self.element_id = element_id
         self.coeffs_functional = coeffs_functional
         self.data = data
@@ -68,10 +82,11 @@ class ElementSolver(BaseSolver):
 
         objective.SetMaximization()
 
-    def get_solution(self) -> Tuple[List[float], List[float], List[float]]:
-        """Extract solution values."""
-        return (
-            [v.solution_value() for v in self.y_e],
-            [v.solution_value() for v in self.z_e],
-            [v.solution_value() for v in self.t_0_e]
-        )
+    def get_solution(self) -> Dict[str, Any]:
+        """Extract solution values with formatting."""
+        solution = {
+            'y_e': [v.solution_value() for v in self.y_e],
+            'z_e': [v.solution_value() for v in self.z_e],
+            't_0_e': [v.solution_value() for v in self.t_0_e]
+        }
+        return solution

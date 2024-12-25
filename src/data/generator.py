@@ -1,14 +1,19 @@
 import numpy as np
-from typing import List
-from models.element import ElementData
+
 from models.center import CenterData
+from models.element import ElementData
+from utils.assertions import assert_positive, assert_valid_dimensions
 from .config import SystemConfig
+
 
 class DataGenerator:
     """Generates random test data for the optimization system."""
 
     def __init__(self, config: SystemConfig, seed: int = 1810):
         """Initialize the data generator with system configuration."""
+        assert_positive(config.NUM_ELEMENTS, "NUM_ELEMENTS")
+        for i, n in enumerate(config.NUM_DECISION_VARIABLES):
+            assert_positive(n, f"NUM_DECISION_VARIABLES[{i}]")
         self.config = config
         np.random.seed(seed)
 
@@ -18,10 +23,20 @@ class DataGenerator:
         m = self.config.NUM_CONSTRAINTS[element_idx]
         n1 = self.config.NUM_AGGREGATED_PRODUCTS[element_idx]
 
+        coeffs_functional = np.random.randint(1, 10, (n))
+        resource_constraints = np.random.randint(1, 10, (m)) * 100
+        aggregated_plan_costs = np.random.randint(1, 5, (m, n))
+
+        assert_valid_dimensions(
+            [coeffs_functional, resource_constraints],
+            [(n,), (m,)],
+            ["coeffs_functional", "resource_constraints"]
+        )
+
         return ElementData(
-            coeffs_functional=np.random.randint(1, 10, (n)),
-            resource_constraints=np.random.randint(1, 10, (m)) * 100,
-            aggregated_plan_costs=np.random.randint(1, 5, (m, n)),
+            coeffs_functional=coeffs_functional,
+            resource_constraints=resource_constraints,
+            aggregated_plan_costs=aggregated_plan_costs,
             aggregated_plan_times=np.random.randint(1, 5, (n1)),
             directive_terms=np.random.randint(5, 25, (n1)) * 5,
             num_directive_products=np.random.randint(5, 10, (n1)),

@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 from typing import List
+
 import numpy as np
+
 from .element import ElementData
+
 
 @dataclass(frozen=True)
 class CenterConfig:
@@ -9,6 +12,7 @@ class CenterConfig:
     num_elements: int
     free_order: bool
     delta: float
+
 
 @dataclass(frozen=True)
 class CenterData:

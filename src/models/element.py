@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import List, Optional
+
 import numpy as np
+
 
 @dataclass(frozen=True)
 class ElementConfig:
@@ -10,6 +11,7 @@ class ElementConfig:
     num_aggregated_products: int
     num_soft_deadline_products: int
     num_constraints: int
+
 
 @dataclass(frozen=True)
 class ElementData:

@@ -1,17 +1,22 @@
-from typing import List, Optional, Tuple, Dict
+from typing import Dict
+from typing import List, Any
+
+from models.center import CenterData
 from solvers.base import BaseSolver
-from models.center import CenterConfig, CenterData
-from solvers.element.default import ElementSolver
-from typing import List, Optional, Tuple, Any
-import numpy as np
-from solvers.base import BaseSolver
-from models.element import ElementConfig, ElementData
+from utils.assertions import assert_valid_dimensions
+
 
 class CenterCriteria1Solver(BaseSolver):
     """Implementation of the first optimization criteria for the center."""
 
     def __init__(self, data: CenterData):
         super().__init__()
+        for e, element in enumerate(data.elements):
+            assert_valid_dimensions(
+                [data.coeffs_functional[e]],
+                [(len(element.aggregated_plan_costs[0]),)],
+                [f"coeffs_functional[{e}]"]
+            )
         self.data = data
         self.y_e: List[List[Any]] = []
         self.z_e: List[List[Any]] = []
@@ -81,10 +86,11 @@ class CenterCriteria1Solver(BaseSolver):
 
         objective.SetMaximization()
 
-    def get_solution(self) -> Dict[str, List[List[float]]]:
-        """Extract the solution values."""
-        return {
+    def get_solution(self) -> Dict[str, Any]:
+        """Extract and format solution values."""
+        solution = {
             'y_e': [[v.solution_value() for v in element] for element in self.y_e],
             'z_e': [[v.solution_value() for v in element] for element in self.z_e],
             't_0_e': [[v.solution_value() for v in element] for element in self.t_0_e]
         }
+        return solution

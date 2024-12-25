@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Optional, Tuple
+
 from ortools.linear_solver import pywraplp
 
 

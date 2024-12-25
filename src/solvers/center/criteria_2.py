@@ -1,11 +1,9 @@
-from typing import List, Optional, Tuple, Dict
+from typing import Dict
+from typing import List, Any
+
+from models.center import CenterData
 from solvers.base import BaseSolver
-from models.center import CenterConfig, CenterData
 from solvers.element.default import ElementSolver
-from typing import List, Optional, Tuple, Any
-import numpy as np
-from solvers.base import BaseSolver
-from models.element import ElementConfig, ElementData
 
 
 class CenterCriteria2Solver(BaseSolver):
@@ -98,10 +96,11 @@ class CenterCriteria2Solver(BaseSolver):
 
         objective.SetMaximization()
 
-    def get_solution(self) -> Dict[str, List[List[float]]]:
-        """Extract the solution values."""
-        return {
+    def get_solution(self) -> Dict[str, Any]:
+        """Extract and format solution values."""
+        solution = {
             'y_e': [[v.solution_value() for v in element] for element in self.y_e],
             'z_e': [[v.solution_value() for v in element] for element in self.z_e],
             't_0_e': [[v.solution_value() for v in element] for element in self.t_0_e]
         }
+        return solution

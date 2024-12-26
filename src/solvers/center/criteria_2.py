@@ -1,6 +1,8 @@
 from typing import Dict
 from typing import List, Any
 
+from utils.assertions import assert_valid_dimensions
+
 from models.center import CenterData
 from solvers.base import BaseSolver
 from solvers.element.default import ElementSolver
@@ -11,6 +13,12 @@ class CenterCriteria2Solver(BaseSolver):
 
     def __init__(self, data: CenterData, delta: float):
         super().__init__()
+        for e, element in enumerate(data.elements):
+            assert_valid_dimensions(
+                [data.coeffs_functional[e]],
+                [(len(element.aggregated_plan_costs[0]),)],
+                [f"coeffs_functional[{e}]"]
+            )
         self.data = data
         self.delta = delta
         self.y_e: List[List[Any]] = []
@@ -78,20 +86,25 @@ class CenterCriteria2Solver(BaseSolver):
             )
 
     def setup_objective(self) -> None:
-        """Set up the objective function."""
+        """
+        Set up the objective function.
+
+        max (C^e^T * y^e - sum_j={1..n1}(FINES_FOR_DEADLINE[e][j] * z_j))
+        """
+
         objective = self.solver.Objective()
 
-        for e in range(len(self.data.elements)):
-            for i in range(len(self.data.coeffs_functional[e])):
+        for e, element in enumerate(self.data.elements):
+            for i, coeff in enumerate(self.data.coeffs_functional[e]):
                 objective.SetCoefficient(
                     self.y_e[e][i],
-                    float(self.data.elements[e].coeffs_functional[i])
+                    float(coeff)
                 )
 
-            for i in range(len(self.data.elements[e].fines_for_deadline)):
+            for i, fine in enumerate(element.fines_for_deadline):
                 objective.SetCoefficient(
                     self.z_e[e][i],
-                    float(-self.data.elements[e].fines_for_deadline[i])
+                    float(-fine)
                 )
 
         objective.SetMaximization()

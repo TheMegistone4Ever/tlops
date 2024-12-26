@@ -1,10 +1,10 @@
 from typing import List, Any, Dict
 
 import numpy as np
+from utils.assertions import assert_valid_dimensions, assert_non_negative
 
 from models.element import ElementData
 from solvers.base import BaseSolver
-from utils.assertions import assert_valid_dimensions, assert_non_negative
 
 
 class ElementSolver(BaseSolver):
@@ -79,11 +79,17 @@ class ElementSolver(BaseSolver):
 
         objective = self.solver.Objective()
 
-        for i in range(len(self.coeffs_functional)):
-            objective.SetCoefficient(self.y_e[i], float(self.coeffs_functional[i]))
+        for i, coeff in enumerate(self.coeffs_functional):
+            objective.SetCoefficient(
+                self.y_e[i],
+                float(coeff)
+            )
 
-        for i in range(len(self.data.fines_for_deadline)):
-            objective.SetCoefficient(self.z_e[i], float(-self.data.fines_for_deadline[i]))
+        for i, fine in enumerate(self.data.fines_for_deadline):
+            objective.SetCoefficient(
+                self.z_e[i],
+                float(-fine)
+            )
 
         objective.SetMaximization()
 

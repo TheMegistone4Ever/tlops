@@ -1,9 +1,10 @@
 from typing import Dict
 from typing import List, Any
 
+from utils.assertions import assert_valid_dimensions
+
 from models.center import CenterData
 from solvers.base import BaseSolver
-from utils.assertions import assert_valid_dimensions
 
 
 class CenterCriteria1Solver(BaseSolver):
@@ -68,20 +69,25 @@ class CenterCriteria1Solver(BaseSolver):
                 self.solver.Add(self.y_e[e][i] >= element.num_directive_products[i])
 
     def setup_objective(self) -> None:
-        """Set up the objective function."""
+        """
+        Set up the objective function.
+
+        max (C^e^T * y^e - sum_j={1..n1}(FINES_FOR_DEADLINE[e][j] * z_j))
+        """
+
         objective = self.solver.Objective()
 
-        for e in range(len(self.data.elements)):
-            for i in range(len(self.data.coeffs_functional[e])):
+        for e, element in enumerate(self.data.elements):
+            for i, coeff in enumerate(self.data.coeffs_functional[e]):
                 objective.SetCoefficient(
                     self.y_e[e][i],
-                    float(self.data.coeffs_functional[e][i])
+                    float(coeff)
                 )
 
-            for i in range(len(self.data.elements[e].fines_for_deadline)):
+            for i, fine in enumerate(element.fines_for_deadline):
                 objective.SetCoefficient(
                     self.z_e[e][i],
-                    float(-self.data.elements[e].fines_for_deadline[i])
+                    float(-fine)
                 )
 
         objective.SetMaximization()

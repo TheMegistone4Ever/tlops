@@ -28,8 +28,8 @@ class DataGenerator:
         aggregated_plan_costs = np.random.randint(1, 5, (m, n))
 
         assert_valid_dimensions(
-            [coeffs_functional, resource_constraints],
-            [(n,), (m,)],
+            [coeffs_functional, resource_constraints, aggregated_plan_costs],
+            [(n,), (m,), (m, n)],
             ["coeffs_functional", "resource_constraints"]
         )
 

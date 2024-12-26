@@ -1,11 +1,10 @@
 from data.config import SystemConfig
+from data.generator import DataGenerator
 from solvers.center.criteria_1 import CenterCriteria1Solver
 from solvers.center.criteria_2 import CenterCriteria2Solver
 
 
 def main():
-    from data.generator import DataGenerator
-
     # Initialize system configuration
     system_config = SystemConfig()
 
@@ -28,9 +27,13 @@ def main():
     result_2 = solver_2.solve()
 
     print("Results for different criteria:")
-    print(f"Criteria 1: {result_1[0] if result_1 else 'No solution'}")
-    print(f"Criteria 2: {result_2[0] if result_2 else 'No solution'}")
+    print(f"Criteria 1: {result_1[0] if result_1 else "No solution"}")
+    print(f"Criteria 2: {result_2[0] if result_2 else "No solution"}")
 
 
 if __name__ == "__main__":
+    # TODO: 1. Add printing results like in original logic.
+    # TODO: 2. Check all constraints.
+    # TODO: 3. Check all objective functions.
+
     main()

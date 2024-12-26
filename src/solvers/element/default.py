@@ -71,7 +71,12 @@ class ElementSolver(BaseSolver):
             self.solver.Add(self.y_e[i] >= self.data.num_directive_products[i])
 
     def setup_objective(self) -> None:
-        """Set up the objective function."""
+        """
+        Set up the objective function.
+
+        max (C^e^T * y^e - sum_j={1..n1}(FINES_FOR_DEADLINE[e][j] * z_j))
+        """
+
         objective = self.solver.Objective()
 
         for i in range(len(self.coeffs_functional)):

@@ -47,7 +47,7 @@ class ElementSolver(BaseSolver):
 
     def setup_constraints(self) -> None:
         """Set up constraints for the element problem."""
-        # Resource constraints
+        # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
         for i in range(len(self.data.resource_constraints)):
             self.solver.Add(
                 sum(self.data.aggregated_plan_costs[i][j] * self.y_e[j]
@@ -55,8 +55,10 @@ class ElementSolver(BaseSolver):
                 <= self.data.resource_constraints[i]
             )
 
-        # Soft deadline constraints
-        for i in range(len(self.data.aggregated_plan_times)):
+        num_soft_deadline_products = 1  # TODO: STUB, replace with actual value given in element config
+
+        # Soft deadline constraints: T_i - z_i <= D_i, i=1..n2
+        for i in range(num_soft_deadline_products):
             T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
             self.solver.Add(T_i - self.z_e[i] <= self.data.directive_terms[i])
             if i != 0:
@@ -66,7 +68,13 @@ class ElementSolver(BaseSolver):
                         for j in range(i))
                 )
 
-        # Minimum production constraints
+        # Hard deadline constraints: -z_i <= D_i - T_i <= z_i, i=n2+1..n1
+        for i in range(num_soft_deadline_products, len(self.data.aggregated_plan_times)):
+            T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
+            self.solver.Add(-self.z_e[i] <= self.data.directive_terms[i] - T_i)
+            self.solver.Add(self.data.directive_terms[i] - T_i <= self.z_e[i])
+
+        # Minimum production constraints: Y_L_i >= Y_ASSIGNED_L_i, i=1..n1
         for i in range(len(self.data.num_directive_products)):
             self.solver.Add(self.y_e[i] >= self.data.num_directive_products[i])
 

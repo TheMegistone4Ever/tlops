@@ -1,11 +1,11 @@
 from typing import Dict
 from typing import List, Any
 
-from utils.assertions import assert_valid_dimensions
-
 from models.center import CenterData
+from models.element import ElementData
 from solvers.base import BaseSolver
 from solvers.element.default import ElementSolver
+from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
 
 
 class CenterCriteria2Solver(BaseSolver):
@@ -19,6 +19,27 @@ class CenterCriteria2Solver(BaseSolver):
                 [(len(element.aggregated_plan_costs[0]),)],
                 [f"coeffs_functional[{e}]"]
             )
+            assert_non_negative(
+                element.config.id,
+                f"element.config.id[{e}]"
+            )
+            assert_positive(
+                element.config.num_decision_variables,
+                f"element.config.num_decision_variables[{e}]"
+            )
+            assert_positive(
+                element.config.num_aggregated_products,
+                f"element.config.num_aggregated_products[{e}]"
+            )
+            assert_positive(
+                element.config.num_soft_deadline_products,
+                f"element.config.num_soft_deadline_products[{e}]"
+            )
+            assert_positive(
+                element.config.num_constraints,
+                f"element.config.num_constraints[{e}]"
+            )
+
         self.data = data
         self.delta = delta
         self.y_e: List[List[Any]] = []
@@ -71,10 +92,18 @@ class CenterCriteria2Solver(BaseSolver):
                 self.solver.Add(self.y_e[e][i] >= element.num_directive_products[i])
 
             # Delta constraint
-            element_solver = ElementSolver(e, self.data.coeffs_functional[e], element)
-            element_solver.setup_variables()
-            element_solver.setup_constraints()
-            element_solver.setup_objective()
+            delta_element_data = ElementData(
+                element.config,
+                self.data.coeffs_functional[e],
+                element.resource_constraints,
+                element.aggregated_plan_costs,
+                element.aggregated_plan_times,
+                element.directive_terms,
+                element.num_directive_products,
+                element.fines_for_deadline
+            )
+            element_solver = ElementSolver(delta_element_data)
+            element_solver.setup()
             optimal_value = element_solver.solve()[0]
 
             self.solver.Add(

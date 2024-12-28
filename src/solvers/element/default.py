@@ -1,30 +1,26 @@
 from typing import List, Any, Dict
 
-import numpy as np
-from utils.assertions import assert_valid_dimensions, assert_non_negative
-
 from models.element import ElementData
 from solvers.base import BaseSolver
+from utils.assertions import assert_valid_dimensions, assert_non_negative
 
 
 class ElementSolver(BaseSolver):
     """Solver for element-level optimization problems."""
 
-    def __init__(self, element_id: int, coeffs_functional: np.ndarray, data: ElementData):
+    def __init__(self, data: ElementData):
         super().__init__()
         # Validate input dimensions
         assert_valid_dimensions(
-            [coeffs_functional],
+            [data.coeffs_functional],
             [(len(data.aggregated_plan_costs[0]),)],
             ["coeffs_functional"]
         )
 
         # Validate non-negative coefficients
-        for i, coeff in enumerate(coeffs_functional):
+        for i, coeff in enumerate(data.coeffs_functional):
             assert_non_negative(coeff, f"coeffs_functional[{i}]")
 
-        self.element_id = element_id
-        self.coeffs_functional = coeffs_functional
         self.data = data
         self.y_e: List[Any] = []
         self.z_e: List[Any] = []
@@ -33,15 +29,15 @@ class ElementSolver(BaseSolver):
     def setup_variables(self) -> None:
         """Set up optimization variables for the element problem."""
         self.y_e = [
-            self.solver.NumVar(0, self.solver.infinity(), f"y_{self.element_id}_{i}")
-            for i in range(len(self.coeffs_functional))
+            self.solver.NumVar(0, self.solver.infinity(), f"y_{self.data.config.id}_{i}")
+            for i in range(len(self.data.coeffs_functional))
         ]
         self.z_e = [
-            self.solver.NumVar(0, self.solver.infinity(), f"z_{self.element_id}_{i}")
+            self.solver.NumVar(0, self.solver.infinity(), f"z_{self.data.config.id}_{i}")
             for i in range(len(self.data.aggregated_plan_times))
         ]
         self.t_0_e = [
-            self.solver.NumVar(0, self.solver.infinity(), f"t_0_{self.element_id}_{i}")
+            self.solver.NumVar(0, self.solver.infinity(), f"t_0_{self.data.config.id}_{i}")
             for i in range(len(self.data.aggregated_plan_times))
         ]
 
@@ -51,14 +47,12 @@ class ElementSolver(BaseSolver):
         for i in range(len(self.data.resource_constraints)):
             self.solver.Add(
                 sum(self.data.aggregated_plan_costs[i][j] * self.y_e[j]
-                    for j in range(len(self.coeffs_functional)))
+                    for j in range(len(self.data.coeffs_functional)))
                 <= self.data.resource_constraints[i]
             )
 
-        num_soft_deadline_products = 1  # TODO: STUB, replace with actual value given in element config
-
         # Soft deadline constraints: T_i - z_i <= D_i, i=1..n2
-        for i in range(num_soft_deadline_products):
+        for i in range(self.data.config.num_soft_deadline_products):
             T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
             self.solver.Add(T_i - self.z_e[i] <= self.data.directive_terms[i])
             if i != 0:
@@ -69,7 +63,7 @@ class ElementSolver(BaseSolver):
                 )
 
         # Hard deadline constraints: -z_i <= D_i - T_i <= z_i, i=n2+1..n1
-        for i in range(num_soft_deadline_products, len(self.data.aggregated_plan_times)):
+        for i in range(self.data.config.num_soft_deadline_products, len(self.data.aggregated_plan_times)):
             T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
             self.solver.Add(-self.z_e[i] <= self.data.directive_terms[i] - T_i)
             self.solver.Add(self.data.directive_terms[i] - T_i <= self.z_e[i])
@@ -87,7 +81,7 @@ class ElementSolver(BaseSolver):
 
         objective = self.solver.Objective()
 
-        for i, coeff in enumerate(self.coeffs_functional):
+        for i, coeff in enumerate(self.data.coeffs_functional):
             objective.SetCoefficient(
                 self.y_e[i],
                 float(coeff)

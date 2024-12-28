@@ -1,10 +1,9 @@
 from typing import Dict
 from typing import List, Any
 
-from utils.assertions import assert_valid_dimensions
-
 from models.center import CenterData
 from solvers.base import BaseSolver
+from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
 
 
 class CenterCriteria1Solver(BaseSolver):
@@ -18,6 +17,27 @@ class CenterCriteria1Solver(BaseSolver):
                 [(len(element.aggregated_plan_costs[0]),)],
                 [f"coeffs_functional[{e}]"]
             )
+            assert_non_negative(
+                element.config.id,
+                f"element.config.id[{e}]"
+            )
+            assert_positive(
+                element.config.num_decision_variables,
+                f"element.config.num_decision_variables[{e}]"
+            )
+            assert_positive(
+                element.config.num_aggregated_products,
+                f"element.config.num_aggregated_products[{e}]"
+            )
+            assert_positive(
+                element.config.num_soft_deadline_products,
+                f"element.config.num_soft_deadline_products[{e}]"
+            )
+            assert_positive(
+                element.config.num_constraints,
+                f"element.config.num_constraints[{e}]"
+            )
+
         self.data = data
         self.y_e: List[List[Any]] = []
         self.z_e: List[List[Any]] = []

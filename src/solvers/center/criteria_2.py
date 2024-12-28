@@ -14,7 +14,7 @@ class CenterCriteria2Solver(BaseSolver):
 
     def __init__(self, data: CenterData, delta: float):
         super().__init__()
-        for e, element in enumerate(data.elements):
+        for e, (element) in enumerate(data.elements):
             assert_valid_dimensions(
                 [data.coeffs_functional[e]],
                 [(len(element.aggregated_plan_costs[0]),)],
@@ -124,14 +124,14 @@ class CenterCriteria2Solver(BaseSolver):
 
         objective = self.solver.Objective()
 
-        for e, element in enumerate(self.data.elements):
-            for c, coeff in enumerate(element.coeffs_functional):
+        for e, (element) in enumerate(self.data.elements):
+            for c, (coeff) in enumerate(element.coeffs_functional):
                 objective.SetCoefficient(
                     self.y_e[e][c],
                     float(coeff)
                 )
 
-            for f, fine in enumerate(element.fines_for_deadline):
+            for f, (fine) in enumerate(element.fines_for_deadline):
                 objective.SetCoefficient(
                     self.z_e[e][f],
                     float(-fine)

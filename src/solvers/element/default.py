@@ -19,7 +19,7 @@ class ElementSolver(BaseSolver):
         )
 
         # Validate non-negative coefficients
-        for i, coeff in enumerate(data.coeffs_functional):
+        for i, (coeff) in enumerate(data.coeffs_functional):
             assert_non_negative(coeff, f"coeffs_functional[{i}]")
 
         self.data = data
@@ -82,13 +82,13 @@ class ElementSolver(BaseSolver):
 
         objective = self.solver.Objective()
 
-        for i, coeff in enumerate(self.data.coeffs_functional):
+        for i, (coeff) in enumerate(self.data.coeffs_functional):
             objective.SetCoefficient(
                 self.y_e[i],
                 float(coeff)
             )
 
-        for i, fine in enumerate(self.data.fines_for_deadline):
+        for i, (fine) in enumerate(self.data.fines_for_deadline):
             objective.SetCoefficient(
                 self.z_e[i],
                 float(-fine)

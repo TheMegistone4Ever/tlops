@@ -12,7 +12,7 @@ class CenterCriteria1Solver(BaseSolver):
 
     def __init__(self, data: CenterData):
         super().__init__()
-        for e, element in enumerate(data.elements):
+        for e, (element) in enumerate(data.elements):
             assert_valid_dimensions(
                 [data.coeffs_functional[e]],
                 [(len(element.aggregated_plan_costs[0]),)],
@@ -98,14 +98,14 @@ class CenterCriteria1Solver(BaseSolver):
 
         objective = self.solver.Objective()
 
-        for e, element in enumerate(self.data.elements):
-            for c, coeff in enumerate(element.coeffs_functional):
+        for e, (element) in enumerate(self.data.elements):
+            for c, (coeff) in enumerate(element.coeffs_functional):
                 objective.SetCoefficient(
                     self.y_e[e][c],
                     float(coeff)
                 )
 
-            for f, fine in enumerate(element.fines_for_deadline):
+            for f, (fine) in enumerate(element.fines_for_deadline):
                 objective.SetCoefficient(
                     self.z_e[e][f],
                     float(-fine)
@@ -128,7 +128,8 @@ class CenterCriteria1Solver(BaseSolver):
         center_data = (
             ("Number of Elements", format_tensor(self.data.config.num_elements)),
             (
-            "Number of Constraints", format_tensor([element.config.num_constraints for element in self.data.elements])),
+                "Number of Constraints",
+                format_tensor([element.config.num_constraints for element in self.data.elements])),
             ("Number of Decision Variables",
              format_tensor([element.config.num_decision_variables for element in self.data.elements])),
             ("Number of Aggregated Products",

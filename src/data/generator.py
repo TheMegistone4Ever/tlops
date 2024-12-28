@@ -12,7 +12,7 @@ class DataGenerator:
     def __init__(self, config: SystemConfig, seed: int = 1810):
         """Initialize the data generator with system configuration."""
         assert_positive(config.NUM_ELEMENTS, "NUM_ELEMENTS")
-        for i, n in enumerate(config.NUM_DECISION_VARIABLES):
+        for i, (n) in enumerate(config.NUM_DECISION_VARIABLES):
             assert_positive(n, f"NUM_DECISION_VARIABLES[{i}]")
         self.config = config
         np.random.seed(seed)

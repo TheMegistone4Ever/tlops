@@ -1,7 +1,7 @@
 import numpy as np
 
-from models.center import CenterData
-from models.element import ElementData
+from models.center import CenterData, CenterConfig
+from models.element import ElementData, ElementConfig
 from utils.assertions import assert_positive, assert_valid_dimensions
 from .config import SystemConfig
 
@@ -33,7 +33,16 @@ class DataGenerator:
             ["coeffs_functional", "resource_constraints"]
         )
 
-        return ElementData(
+        element_config = ElementConfig(
+            id=element_idx,
+            num_decision_variables=n,
+            num_aggregated_products=n1,
+            num_soft_deadline_products=self.config.NUM_SOFT_DEADLINE_PRODUCTS[element_idx],
+            num_constraints=m
+        )
+
+        element_data = ElementData(
+            config=element_config,
             coeffs_functional=coeffs_functional,
             resource_constraints=resource_constraints,
             aggregated_plan_costs=aggregated_plan_costs,
@@ -42,6 +51,8 @@ class DataGenerator:
             num_directive_products=np.random.randint(5, 10, (n1)),
             fines_for_deadline=np.random.randint(1, 10, (n1))
         )
+
+        return element_data
 
     def generate_system_data(self) -> CenterData:
         """Generate complete system data."""
@@ -55,7 +66,16 @@ class DataGenerator:
             for i in range(self.config.NUM_ELEMENTS)
         ]
 
-        return CenterData(
+        center_config = CenterConfig(
+            num_elements=self.config.NUM_ELEMENTS,
+            free_order=self.config.FREE_ORDER,
+            delta=self.config.DELTA
+        )
+
+        center_data = CenterData(
+            config=center_config,
             coeffs_functional=center_coeffs,
             elements=elements_data
         )
+
+        return center_data

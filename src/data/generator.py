@@ -69,7 +69,6 @@ class DataGenerator:
         center_config = CenterConfig(
             num_elements=self.config.NUM_ELEMENTS,
             free_order=self.config.FREE_ORDER,
-            delta=self.config.DELTA
         )
 
         center_data = CenterData(

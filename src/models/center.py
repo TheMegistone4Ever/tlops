@@ -11,7 +11,6 @@ class CenterConfig:
     """Configuration data for the system center."""
     num_elements: int
     free_order: bool
-    delta: float
 
 
 @dataclass(frozen=True)

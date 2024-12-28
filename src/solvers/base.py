@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Tuple
+from typing import Any, Tuple, Dict
 
 from ortools.linear_solver import pywraplp
 
@@ -9,6 +9,7 @@ class BaseSolver(ABC):
 
     def __init__(self):
         self.solver = pywraplp.Solver.CreateSolver("GLOP")
+        self.solved = False
 
     @abstractmethod
     def setup_variables(self) -> None:
@@ -31,24 +32,21 @@ class BaseSolver(ABC):
         self.setup_constraints()
         self.setup_objective()
 
-    def solve(self) -> Optional[Tuple[float, Any]]:
+    def solve(self) -> Tuple[float, Any]:
         """Solve the optimization problem."""
-        status = self.solver.Solve()
-        if status == pywraplp.Solver.OPTIMAL:
-            return self.solver.Objective().Value(), self.get_solution()
-        return None
+        if not self.solved:
+            status = self.solver.Solve()
+            if status == pywraplp.Solver.OPTIMAL:
+                return self.solver.Objective().Value(), self.get_solution()
+            self.solved = True
+        return float("inf"), dict()
 
     @abstractmethod
-    def get_solution(self) -> Any:
+    def get_solution(self) -> Dict[str, Any]:
         """Extract the solution from the solver."""
         pass
 
-    # TODO: STUB, implement printing results
+    @abstractmethod
     def print_results(self) -> None:
         """Print the results of the optimization."""
-        solution = self.solve()
-        if solution:
-            print(f"Optimal value: {solution[0]}")
-            print(f"Solution: {solution[1]}")
-        else:
-            print("No solution found.")
+        pass

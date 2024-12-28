@@ -3,6 +3,7 @@ from typing import List, Any, Dict
 from models.element import ElementData
 from solvers.base import BaseSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative
+from utils.formatters import format_tensor, tab_out
 
 
 class ElementSolver(BaseSolver):
@@ -103,3 +104,36 @@ class ElementSolver(BaseSolver):
             't_0_e': [v.solution_value() for v in self.t_0_e]
         }
         return solution
+
+    def print_results(self) -> None:
+        """Print the results of the optimization for the element."""
+
+        objective, dict_solved = self.solve()
+
+        if objective == float("inf"):
+            print("\nNo optimal solution found.")
+            return
+
+        input_data = (
+            ("Functional Coefficients", format_tensor(self.data.coeffs_functional)),
+            ("Aggregated Plan Costs", format_tensor(self.data.aggregated_plan_costs)),
+            ("Resource Constraints", format_tensor(self.data.resource_constraints)),
+            ("Aggregated Plan Times", format_tensor(self.data.aggregated_plan_times)),
+            ("Directive Terms", format_tensor(self.data.directive_terms)),
+            ("Number of Directive Products", format_tensor(self.data.num_directive_products)),
+            ("Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
+        )
+
+        tab_out(f"\nInput data for element {self.data.config.id}:", input_data)
+
+        y_e_solved, z_e_solved, t_0_e_solved = dict_solved['y_e'], dict_solved['z_e'], dict_solved['t_0_e']
+
+        solution_data = (
+            ("y_e", format_tensor(y_e_solved)),
+            ("z_e", format_tensor(z_e_solved)),
+            ("t_0_e", format_tensor(t_0_e_solved)),
+        )
+
+        tab_out(f"\nSolution for element {self.data.config.id}:", solution_data)
+
+        print(f"\nElement {self.data.config.id} quality functionality: {format_tensor(objective)}")

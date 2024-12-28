@@ -16,6 +16,7 @@ class ElementConfig:
 @dataclass(frozen=True)
 class ElementData:
     """Data container for element-specific optimization parameters."""
+    config: ElementConfig
     coeffs_functional: np.ndarray
     resource_constraints: np.ndarray
     aggregated_plan_costs: np.ndarray

@@ -17,5 +17,6 @@ class CenterConfig:
 @dataclass(frozen=True)
 class CenterData:
     """Data container for center-specific optimization parameters."""
+    config: CenterConfig
     coeffs_functional: List[np.ndarray]
     elements: List[ElementData]

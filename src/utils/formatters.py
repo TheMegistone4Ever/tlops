@@ -1,18 +1,13 @@
 from numbers import Number
-from typing import Union, List, Any
+from typing import Union, List, Any, Sequence
 
 import numpy as np
+from tabulate import tabulate
 
 
-def format_solution(obj_value: float, variables: dict) -> str:
-    """Format optimization solution for display."""
-    lines = [f"Objective Value: {obj_value:.4f}"]
-    for name, value in variables.items():
-        if isinstance(value, list):
-            lines.append(f"{name}: [{", ".join(f"{v:.4f}" for v in value)}]")
-        else:
-            lines.append(f"{name}: {value:.4f}")
-    return "\n".join(lines)
+def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
+    print(f"\n{subscription}:")
+    print(tabulate(data, headers=headers, tablefmt="grid", numalign="right", stralign="left"))
 
 
 def format_tensor(tensor: Union[Number, List[Any], np.ndarray], indent: int = 4, precision: int = 2) -> str:

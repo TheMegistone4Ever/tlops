@@ -4,7 +4,7 @@ from solvers.base import BaseSolver
 
 
 class CenterCriteria4Solver(BaseSolver):
-    """Implementation of the 4th optimization criteria for the center."""
+    """Implementation of the fourth optimization criteria for the center."""
 
     def setup_variables(self) -> None:
         raise NotImplementedError("Criteria 4 is not implemented")
@@ -17,3 +17,6 @@ class CenterCriteria4Solver(BaseSolver):
 
     def get_solution(self) -> Any:
         raise NotImplementedError("Criteria 4 is not implemented")
+
+    def print_results(self) -> None:
+        pass

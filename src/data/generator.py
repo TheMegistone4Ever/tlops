@@ -23,8 +23,8 @@ class DataGenerator:
         m = self.config.NUM_CONSTRAINTS[element_idx]
         n1 = self.config.NUM_AGGREGATED_PRODUCTS[element_idx]
 
-        coeffs_functional = np.random.randint(1, 10, (n))
-        resource_constraints = np.random.randint(1, 10, (m)) * 100
+        coeffs_functional = np.random.randint(1, 10, n)
+        resource_constraints = np.random.randint(1, 10, m) * 100
         aggregated_plan_costs = np.random.randint(1, 5, (m, n))
 
         assert_valid_dimensions(
@@ -46,10 +46,10 @@ class DataGenerator:
             coeffs_functional=coeffs_functional,
             resource_constraints=resource_constraints,
             aggregated_plan_costs=aggregated_plan_costs,
-            aggregated_plan_times=np.random.randint(1, 5, (n1)),
-            directive_terms=np.random.randint(5, 25, (n1)) * 5,
-            num_directive_products=np.random.randint(5, 10, (n1)),
-            fines_for_deadline=np.random.randint(1, 10, (n1))
+            aggregated_plan_times=np.random.randint(1, 5, n1),
+            directive_terms=np.random.randint(5, 25, n1) * 5,
+            num_directive_products=np.random.randint(5, 10, n1),
+            fines_for_deadline=np.random.randint(1, 10, n1)
         )
 
         return element_data

@@ -1,5 +1,4 @@
-from typing import Dict
-from typing import List, Any
+from typing import Dict, List, Any
 
 from models.center import CenterData
 from models.element import ElementData
@@ -43,9 +42,33 @@ class CenterCriteria2Solver(BaseSolver):
 
         self.data = data
         self.delta = delta
-        self.y_e: List[List[Any]] = []
-        self.z_e: List[List[Any]] = []
-        self.t_0_e: List[List[Any]] = []
+        self.y_e: List[List[Any]] = list()
+        self.z_e: List[List[Any]] = list()
+        self.t_0_e: List[List[Any]] = list()
+        self.f_e_2opt: List[float] = list()
+
+        for e in range(self.data.config.num_elements):
+            element_data = ElementData(
+                config=self.data.elements[e].config,
+                coeffs_functional=self.data.coeffs_functional[e],
+                resource_constraints=self.data.elements[e].resource_constraints,
+                aggregated_plan_costs=self.data.elements[e].aggregated_plan_costs,
+                aggregated_plan_times=self.data.elements[e].aggregated_plan_times,
+                directive_terms=self.data.elements[e].directive_terms,
+                num_directive_products=self.data.elements[e].num_directive_products,
+                fines_for_deadline=self.data.elements[e].fines_for_deadline
+            )
+
+            # TODO: Implement this behavior in the ElementSolver class
+            # element_data = self.data.elements[e]
+            # element_data.coeffs_functional = self.data.coeffs_functional[e]
+
+            element_solver = ElementSolver(element_data)
+            element_solver.setup()
+
+            f_e_2opt = element_solver.solve()[0]
+
+            self.f_e_2opt.append(f_e_2opt)
 
     def setup_variables(self) -> None:
         """Set up optimization variables."""
@@ -65,22 +88,22 @@ class CenterCriteria2Solver(BaseSolver):
 
     def setup_constraints(self) -> None:
         """Set up optimization constraints."""
+
         for e in range(len(self.data.elements)):
             element = self.data.elements[e]
 
-            # Resource constraints
-            for i in range(len(element.resource_constraints)):
+            # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
+            for i in range(element.config.num_constraints):
                 self.solver.Add(
                     sum(element.aggregated_plan_costs[i][j] * self.y_e[e][j]
-                        for j in range(len(self.data.coeffs_functional[e])))
+                        for j in range(element.config.num_decision_variables))
                     <= element.resource_constraints[i]
                 )
 
-            # Time and deadline constraints
-            for i in range(len(element.aggregated_plan_times)):
+            # Soft deadline constraints: T_i - z_i <= D_i, i=1..n2
+            for i in range(element.config.num_soft_deadline_products):
                 T_i = self.t_0_e[e][i] + element.aggregated_plan_times[i] * self.y_e[e][i]
                 self.solver.Add(T_i - self.z_e[e][i] <= element.directive_terms[i])
-
                 if i != 0:
                     self.solver.Add(
                         self.t_0_e[e][i] >= self.t_0_e[e][i - 1] +
@@ -88,31 +111,23 @@ class CenterCriteria2Solver(BaseSolver):
                             for j in range(i))
                     )
 
-            # Production constraints
-            for i in range(len(element.num_directive_products)):
+            # Hard deadline constraints: -z_i <= D_i - T_i <= z_i, i=n2+1..n1
+            for i in range(element.config.num_soft_deadline_products, element.config.num_aggregated_products):
+                T_i = self.t_0_e[e][i] + element.aggregated_plan_times[i] * self.y_e[e][i]
+                self.solver.Add(-self.z_e[e][i] <= element.directive_terms[i] - T_i)
+                self.solver.Add(element.directive_terms[i] - T_i <= self.z_e[e][i])
+
+            # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1
+            for i in range(element.config.num_aggregated_products):
                 self.solver.Add(self.y_e[e][i] >= element.num_directive_products[i])
 
-            # Delta constraint
-            delta_element_data = ElementData(
-                element.config,
-                self.data.coeffs_functional[e],
-                element.resource_constraints,
-                element.aggregated_plan_costs,
-                element.aggregated_plan_times,
-                element.directive_terms,
-                element.num_directive_products,
-                element.fines_for_deadline
-            )
-            element_solver = ElementSolver(delta_element_data)
-            element_solver.setup()
-            optimal_value = element_solver.solve()[0]
-
+            # Suboptimality Bound Constraint: VS_COEFFS_CENTER_FUNCTIONAL[e]^T * y^l - sum_j={1..n1}(FINES_FOR_DEADLINE[e][j] * z_j) >= f_e_2opt - DELTA
             self.solver.Add(
                 sum(self.data.coeffs_functional[e][i] * self.y_e[e][i]
-                    for i in range(len(self.data.coeffs_functional[e]))) -
-                sum(element.fines_for_deadline[i] * self.z_e[e][i]
-                    for i in range(len(element.fines_for_deadline)))
-                >= optimal_value - self.delta
+                    for i in range(element.config.num_decision_variables))
+                - sum(element.fines_for_deadline[j] * self.z_e[e][j]
+                      for j in range(element.config.num_aggregated_products))
+                >= self.f_e_2opt[e] - self.delta
             )
 
     def setup_objective(self) -> None:
@@ -141,12 +156,13 @@ class CenterCriteria2Solver(BaseSolver):
 
     def get_solution(self) -> Dict[str, Any]:
         """Extract and format solution values."""
-        solution = {
-            'y_e': [[v.solution_value() for v in element] for element in self.y_e],
-            'z_e': [[v.solution_value() for v in element] for element in self.z_e],
-            't_0_e': [[v.solution_value() for v in element] for element in self.t_0_e]
-        }
-        return solution
+        if self.solution is None:
+            self.solution = {
+                "y_e": [[v.solution_value() for v in element] for element in self.y_e],
+                "z_e": [[v.solution_value() for v in element] for element in self.z_e],
+                "t_0_e": [[v.solution_value() for v in element] for element in self.t_0_e]
+            }
+        return self.solution
 
     def print_results(self) -> None:
         """Print the results of the optimization for the center (first criteria)."""
@@ -187,7 +203,7 @@ class CenterCriteria2Solver(BaseSolver):
 
             tab_out(f"\nInput data for element {self.data.elements[e].config.id}:", input_data)
 
-            y_e_solved, z_e_solved, t_0_e_solved = dict_solved['y_e'][e], dict_solved['z_e'][e], dict_solved['t_0_e'][e]
+            y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y_e"][e], dict_solved["z_e"][e], dict_solved["t_0_e"][e]
 
             solution_data = (
                 ("y_e", format_tensor(y_e_solved)),

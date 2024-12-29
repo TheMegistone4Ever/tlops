@@ -17,7 +17,6 @@ def main():
     solver_2.setup()
     solver_2.print_results()
 
-if __name__ == "__main__":
-    # TODO: Check all constraints. 2'nd priority
 
+if __name__ == "__main__":
     main()

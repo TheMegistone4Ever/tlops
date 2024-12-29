@@ -43,31 +43,31 @@ class CenterCriteria1Solver(BaseSolver):
             )
 
         self.data = data
-        self.y_e: List[List[Any]] = list()
-        self.z_e: List[List[Any]] = list()
-        self.t_0_e: List[List[Any]] = list()
-        self.f_e_1opt: List[float] = list()
+        self.y: List[List[Any]] = list()
+        self.z: List[List[Any]] = list()
+        self.t_0: List[List[Any]] = list()
+        self.f_1opt: List[float] = list()
 
         for e in range(self.data.config.num_elements):
             element_data = copy_element_coeffs(self.data.elements[e], self.data.coeffs_functional[e])
             element_solver = ElementSolver(element_data)
             element_solver.setup()
             f_e_1opt = element_solver.solve()[0]
-            self.f_e_1opt.append(f_e_1opt)
+            self.f_1opt.append(f_e_1opt)
 
     def setup_variables(self) -> None:
         """Set up optimization variables."""
 
         for e, (element) in enumerate(self.data.elements):
-            self.y_e.append([
+            self.y.append([
                 self.solver.NumVar(0, self.solver.infinity(), f"y_{e}_{i}")
                 for i in range(element.config.num_decision_variables)
             ])
-            self.z_e.append([
+            self.z.append([
                 self.solver.NumVar(0, self.solver.infinity(), f"z_{e}_{i}")
                 for i in range(element.config.num_aggregated_products)
             ])
-            self.t_0_e.append([
+            self.t_0.append([
                 self.solver.NumVar(0, self.solver.infinity(), f"t_0_{e}_{i}")
                 for i in range(element.config.num_aggregated_products)
             ])
@@ -79,46 +79,46 @@ class CenterCriteria1Solver(BaseSolver):
             # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
             for i in range(element.config.num_constraints):
                 self.solver.Add(
-                    sum(element.aggregated_plan_costs[i][j] * self.y_e[e][j]
+                    sum(element.aggregated_plan_costs[i][j] * self.y[e][j]
                         for j in range(element.config.num_decision_variables))
                     <= element.resource_constraints[i]
                 )
 
-            # Soft deadline constraints: T_i - z_i <= D_i, i=1..n2
+            # Soft deadline constraints: T_e_i - z_e_i <= D_e_i, i=1..n2_e
             for i in range(element.config.num_soft_deadline_products):
-                T_i = self.t_0_e[e][i] + element.aggregated_plan_times[i] * self.y_e[e][i]
-                self.solver.Add(T_i - self.z_e[e][i] <= element.directive_terms[i])
+                T_i = self.t_0[e][i] + element.aggregated_plan_times[i] * self.y[e][i]
+                self.solver.Add(T_i - self.z[e][i] <= element.directive_terms[i])
                 if i != 0:
                     self.solver.Add(
-                        self.t_0_e[e][i] >= self.t_0_e[e][i - 1] +
-                        sum(element.aggregated_plan_times[j] * self.y_e[e][j]
+                        self.t_0[e][i] >= self.t_0[e][i - 1] +
+                        sum(element.aggregated_plan_times[j] * self.y[e][j]
                             for j in range(i))
                     )
 
-            # Hard deadline constraints: -z_i <= D_i - T_i <= z_i, i=n2+1..n1
+            # Hard deadline constraints: -z_e_i <= D_e_i - T_e_i <= z_e_i, i=n2_e+1..n1_e
             for i in range(element.config.num_soft_deadline_products, element.config.num_aggregated_products):
-                T_i = self.t_0_e[e][i] + element.aggregated_plan_times[i] * self.y_e[e][i]
-                self.solver.Add(-self.z_e[e][i] <= element.directive_terms[i] - T_i)
-                self.solver.Add(element.directive_terms[i] - T_i <= self.z_e[e][i])
+                T_i = self.t_0[e][i] + element.aggregated_plan_times[i] * self.y[e][i]
+                self.solver.Add(-self.z[e][i] <= element.directive_terms[i] - T_i)
+                self.solver.Add(element.directive_terms[i] - T_i <= self.z[e][i])
 
-            # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1
+            # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1_e
             for i in range(element.config.num_aggregated_products):
-                self.solver.Add(self.y_e[e][i] >= element.num_directive_products[i])
+                self.solver.Add(self.y[e][i] >= element.num_directive_products[i])
 
-            # Optimality Equality Constraint: VS_COEFFS_CENTER_FUNCTIONAL[e]^T * y_e - sum_j={1..n1}(FINES_FOR_DEADLINE[e][j] * z_j) = f_e_1opt
+            # Optimality Equality Constraint: VS_COEFFS_CENTER_FUNCTIONAL[e]^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j) = f_1opt_e
             self.solver.Add(
-                sum(self.data.coeffs_functional[e][i] * self.y_e[e][i]
+                sum(self.data.coeffs_functional[e][i] * self.y[e][i]
                     for i in range(element.config.num_decision_variables))
-                - sum(element.fines_for_deadline[j] * self.z_e[e][j]
+                - sum(element.fines_for_deadline[j] * self.z[e][j]
                       for j in range(element.config.num_aggregated_products))
-                == self.f_e_1opt[e]
+                == self.f_1opt[e]
             )
 
     def setup_objective(self) -> None:
         """
         Set up the objective function.
 
-        max (C^e^T * y^e - sum_j={1..n1}(FINES_FOR_DEADLINE[e][j] * z_j))
+        max (C_e^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
         """
 
         objective = self.solver.Objective()
@@ -126,13 +126,13 @@ class CenterCriteria1Solver(BaseSolver):
         for e, (element) in enumerate(self.data.elements):
             for c, (coeff) in enumerate(element.coeffs_functional):
                 objective.SetCoefficient(
-                    self.y_e[e][c],
+                    self.y[e][c],
                     float(coeff)
                 )
 
             for f, (fine) in enumerate(element.fines_for_deadline):
                 objective.SetCoefficient(
-                    self.z_e[e][f],
+                    self.z[e][f],
                     float(-fine)
                 )
 
@@ -143,9 +143,9 @@ class CenterCriteria1Solver(BaseSolver):
 
         if self.solution is None:
             self.solution = {
-                "y_e": [[v.solution_value() for v in element] for element in self.y_e],
-                "z_e": [[v.solution_value() for v in element] for element in self.z_e],
-                "t_0_e": [[v.solution_value() for v in element] for element in self.t_0_e],
+                "y": [[v.solution_value() for v in element] for element in self.y],
+                "z": [[v.solution_value() for v in element] for element in self.z],
+                "t_0": [[v.solution_value() for v in element] for element in self.t_0],
             }
         return self.solution
 
@@ -188,7 +188,7 @@ class CenterCriteria1Solver(BaseSolver):
 
             tab_out(f"\nInput data for element {element.config.id}", input_data)
 
-            y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y_e"][e], dict_solved["z_e"][e], dict_solved["t_0_e"][e]
+            y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y"][e], dict_solved["z"][e], dict_solved["t_0"][e]
 
             solution_data = (
                 ("y_e", format_tensor(y_e_solved)),

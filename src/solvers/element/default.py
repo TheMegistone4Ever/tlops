@@ -54,7 +54,7 @@ class ElementSolver(BaseSolver):
                 <= self.data.resource_constraints[i]
             )
 
-        # Soft deadline constraints: T_i - z_i <= D_i, i=1..n2
+        # Soft deadline constraints: T_e_i - z_e_i <= D_e_i, i=1..n2_e
         for i in range(self.data.config.num_soft_deadline_products):
             T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
             self.solver.Add(T_i - self.z_e[i] <= self.data.directive_terms[i])
@@ -65,13 +65,13 @@ class ElementSolver(BaseSolver):
                         for j in range(i))
                 )
 
-        # Hard deadline constraints: -z_i <= D_i - T_i <= z_i, i=n2+1..n1
+        # Hard deadline constraints: -z_e_i <= D_e_i - T_e_i <= z_e_i, i=n2_e+1..n1_e
         for i in range(self.data.config.num_soft_deadline_products, self.data.config.num_aggregated_products):
             T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
             self.solver.Add(-self.z_e[i] <= self.data.directive_terms[i] - T_i)
             self.solver.Add(self.data.directive_terms[i] - T_i <= self.z_e[i])
 
-        # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1
+        # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1_e
         for i in range(self.data.config.num_aggregated_products):
             self.solver.Add(self.y_e[i] >= self.data.num_directive_products[i])
 
@@ -79,7 +79,7 @@ class ElementSolver(BaseSolver):
         """
         Set up the objective function.
 
-        max (C^e^T * y^e - sum_j={1..n1}(FINES_FOR_DEADLINE[e][j] * z_j))
+        max (C_e^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
         """
 
         objective = self.solver.Objective()

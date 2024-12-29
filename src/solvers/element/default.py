@@ -112,13 +112,13 @@ class ElementSolver(BaseSolver):
             return
 
         input_data = (
-            ("Functional Coefficients", format_tensor(self.data.coeffs_functional)),
-            ("Aggregated Plan Costs", format_tensor(self.data.aggregated_plan_costs)),
-            ("Resource Constraints", format_tensor(self.data.resource_constraints)),
-            ("Aggregated Plan Times", format_tensor(self.data.aggregated_plan_times)),
-            ("Directive Terms", format_tensor(self.data.directive_terms)),
-            ("Number of Directive Products", format_tensor(self.data.num_directive_products)),
-            ("Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
+            ("Element Functional Coefficients", format_tensor(self.data.coeffs_functional)),
+            ("Element Aggregated Plan Costs", format_tensor(self.data.aggregated_plan_costs)),
+            ("Element Resource Constraints", format_tensor(self.data.resource_constraints)),
+            ("Element Aggregated Plan Times", format_tensor(self.data.aggregated_plan_times)),
+            ("Element Directive Terms", format_tensor(self.data.directive_terms)),
+            ("Element Number of Directive Products", format_tensor(self.data.num_directive_products)),
+            ("Element Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
         )
 
         tab_out(f"\nInput data for element {self.data.config.id}", input_data)

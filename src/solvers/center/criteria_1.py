@@ -176,13 +176,14 @@ class CenterCriteria1Solver(BaseSolver):
         center_objective = 0
         for e, (element) in enumerate(self.data.elements):
             input_data = (
-                ("Functional Coefficients", format_tensor(element.coeffs_functional)),
-                ("Aggregated Plan Costs", format_tensor(element.aggregated_plan_costs)),
-                ("Resource Constraints", format_tensor(element.resource_constraints)),
-                ("Aggregated Plan Times", format_tensor(element.aggregated_plan_times)),
-                ("Directive Terms", format_tensor(element.directive_terms)),
-                ("Number of Directive Products", format_tensor(element.num_directive_products)),
-                ("Fines for Deadline", format_tensor(element.fines_for_deadline)),
+                ("Element Functional Coefficients", format_tensor(element.coeffs_functional)),
+                ("Center Functional Coefficients for element", format_tensor(self.data.coeffs_functional[e])),
+                ("Element Aggregated Plan Costs", format_tensor(element.aggregated_plan_costs)),
+                ("Element Resource Constraints", format_tensor(element.resource_constraints)),
+                ("Element Aggregated Plan Times", format_tensor(element.aggregated_plan_times)),
+                ("Element Directive Terms", format_tensor(element.directive_terms)),
+                ("Element Number of Directive Products", format_tensor(element.num_directive_products)),
+                ("Element Fines for Deadline", format_tensor(element.fines_for_deadline)),
             )
 
             tab_out(f"\nInput data for element {element.config.id}", input_data)

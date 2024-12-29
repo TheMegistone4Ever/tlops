@@ -11,4 +11,4 @@ class SystemConfig:
     NUM_SOFT_DEADLINE_PRODUCTS: List[int] = field(default_factory=lambda: [3, 4, 1])
     NUM_CONSTRAINTS: List[int] = field(default_factory=lambda: [4, 2, 3])
     FREE_ORDER: bool = True
-    DELTA: float = 10.0  # For 2'nd criteria
+    DELTA: float = 10.0  # For second criteria

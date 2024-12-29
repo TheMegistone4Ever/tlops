@@ -1,11 +1,10 @@
 from typing import Dict, List, Any
 
 from models.center import CenterData
-from models.element import ElementData
 from solvers.base import BaseSolver
 from solvers.element.default import ElementSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
-from utils.helpers import format_tensor, tab_out
+from utils.helpers import format_tensor, tab_out, copy_element_coeffs
 
 
 class CenterCriteria1Solver(BaseSolver):
@@ -47,26 +46,10 @@ class CenterCriteria1Solver(BaseSolver):
         self.f_e_1opt: List[float] = list()
 
         for e in range(self.data.config.num_elements):
-            element_data = ElementData(
-                config=self.data.elements[e].config,
-                coeffs_functional=self.data.coeffs_functional[e],
-                resource_constraints=self.data.elements[e].resource_constraints,
-                aggregated_plan_costs=self.data.elements[e].aggregated_plan_costs,
-                aggregated_plan_times=self.data.elements[e].aggregated_plan_times,
-                directive_terms=self.data.elements[e].directive_terms,
-                num_directive_products=self.data.elements[e].num_directive_products,
-                fines_for_deadline=self.data.elements[e].fines_for_deadline
-            )
-
-            # TODO: Implement this behavior in the ElementSolver class
-            # element_data = self.data.elements[e]
-            # element_data.coeffs_functional = self.data.coeffs_functional[e]
-
+            element_data = copy_element_coeffs(self.data.elements[e], self.data.coeffs_functional[e])
             element_solver = ElementSolver(element_data)
             element_solver.setup()
-
             f_e_1opt = element_solver.solve()[0]
-
             self.f_e_1opt.append(f_e_1opt)
 
     def setup_variables(self) -> None:

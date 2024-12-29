@@ -164,7 +164,7 @@ class CenterCriteria2Solver(BaseSolver):
             ("Delta", format_tensor(self.delta)),
         )
 
-        tab_out(f"\nCenter data (second criteria):", center_data)
+        tab_out(f"\nCenter data (second criteria)", center_data)
 
         objective, dict_solved = self.solve()
 
@@ -184,7 +184,7 @@ class CenterCriteria2Solver(BaseSolver):
                 ("Fines for Deadline", format_tensor(element.fines_for_deadline)),
             )
 
-            tab_out(f"\nInput data for element {element.config.id}:", input_data)
+            tab_out(f"\nInput data for element {element.config.id}", input_data)
 
             y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y_e"][e], dict_solved["z_e"][e], dict_solved["t_0_e"][e]
 
@@ -194,7 +194,7 @@ class CenterCriteria2Solver(BaseSolver):
                 ("t_0_e", format_tensor(t_0_e_solved)),
             )
 
-            tab_out(f"\nSolution for element {element.config.id}:", solution_data)
+            tab_out(f"\nSolution for element {element.config.id}", solution_data)
 
             print(f"\nElement {element.config.id} quality functionality: {format_tensor(objective)}")
 

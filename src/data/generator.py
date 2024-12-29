@@ -2,7 +2,7 @@ import numpy as np
 
 from models.center import CenterData, CenterConfig
 from models.element import ElementData, ElementConfig
-from utils.assertions import assert_positive, assert_valid_dimensions
+from utils.assertions import assert_positive
 from .config import SystemConfig
 
 
@@ -20,19 +20,10 @@ class DataGenerator:
 
     def _generate_element_data(self, element_idx: int) -> ElementData:
         """Generate random data for a single element."""
+
         n = self.config.NUM_DECISION_VARIABLES[element_idx]
         m = self.config.NUM_CONSTRAINTS[element_idx]
         n1 = self.config.NUM_AGGREGATED_PRODUCTS[element_idx]
-
-        coeffs_functional = np.random.randint(1, 10, n)
-        resource_constraints = np.random.randint(1, 10, m) * 100
-        aggregated_plan_costs = np.random.randint(1, 5, (m, n))
-
-        assert_valid_dimensions(
-            [coeffs_functional, resource_constraints, aggregated_plan_costs],
-            [(n,), (m,), (m, n)],
-            ["coeffs_functional", "resource_constraints"]
-        )
 
         element_config = ElementConfig(
             id=element_idx,
@@ -44,9 +35,9 @@ class DataGenerator:
 
         element_data = ElementData(
             config=element_config,
-            coeffs_functional=coeffs_functional,
-            resource_constraints=resource_constraints,
-            aggregated_plan_costs=aggregated_plan_costs,
+            coeffs_functional=np.random.randint(1, 10, n),
+            resource_constraints=np.random.randint(1, 10, m) * 100,
+            aggregated_plan_costs=np.random.randint(1, 5, (m, n)),
             aggregated_plan_times=np.random.randint(1, 5, n1),
             directive_terms=np.random.randint(5, 25, n1) * 5,
             num_directive_products=np.random.randint(5, 10, n1),
@@ -64,7 +55,7 @@ class DataGenerator:
         ]
 
         center_coeffs = [
-            np.random.randint(1, 3, (self.config.NUM_DECISION_VARIABLES[i]))
+            np.random.randint(1, 3, self.config.NUM_DECISION_VARIABLES[i])
             for i in range(self.config.NUM_ELEMENTS)
         ]
 

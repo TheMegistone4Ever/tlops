@@ -29,6 +29,7 @@ class ElementSolver(BaseSolver):
 
     def setup_variables(self) -> None:
         """Set up optimization variables for the element problem."""
+
         self.y_e = [
             self.solver.NumVar(0, self.solver.infinity(), f"y_{self.data.config.id}_{i}")
             for i in range(self.data.config.num_decision_variables)
@@ -93,6 +94,7 @@ class ElementSolver(BaseSolver):
 
     def get_solution(self) -> Dict[str, Any]:
         """Extract solution values with formatting."""
+
         solution = {
             "y_e": [v.solution_value() for v in self.y_e],
             "z_e": [v.solution_value() for v in self.z_e],

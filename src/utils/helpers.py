@@ -9,6 +9,8 @@ from models.element import ElementData
 
 
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
+    """Pretty-prints a table with the given data and headers."""
+
     print(f"\n{subscription}:")
     print(tabulate(data, headers=headers, tablefmt="grid", numalign="right", stralign="left"))
 
@@ -43,16 +45,19 @@ def format_tensor(tensor: Union[Number, List[Any], np.ndarray], indent: int = 4,
 
     def format_number(x: Number) -> str:
         """Helper function to format numbers with consistent precision"""
+
         if isinstance(x, float):
             return str(round(x, precision))
         return str(x)
 
     def is_nested(x: Any) -> bool:
         """Helper function to check if an object is a nested structure"""
+
         return isinstance(x, list) and any(isinstance(item, (list, np.ndarray)) for item in x)
 
     def format_recursive(x: Any, level: int = 0) -> str:
         """Recursively format nested structures"""
+
         # Base case: handle numbers
         if isinstance(x, Number):
             return format_number(x)

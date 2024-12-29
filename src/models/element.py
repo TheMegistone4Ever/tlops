@@ -6,6 +6,7 @@ import numpy as np
 @dataclass(frozen=True)
 class ElementConfig:
     """Configuration data for an element in the system."""
+
     id: int
     num_decision_variables: int
     num_aggregated_products: int
@@ -16,6 +17,7 @@ class ElementConfig:
 @dataclass(frozen=True)
 class ElementData:
     """Data container for element-specific optimization parameters."""
+
     config: ElementConfig
     coeffs_functional: np.ndarray
     resource_constraints: np.ndarray

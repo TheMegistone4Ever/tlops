@@ -15,7 +15,7 @@ class CenterCriteria2Solver(BaseSolver):
         for e, (element) in enumerate(data.elements):
             assert_valid_dimensions(
                 [data.coeffs_functional[e]],
-                [(len(element.aggregated_plan_costs[0]),)],
+                [(data.elements[e].config.num_decision_variables,)],
                 [f"coeffs_functional[{e}]"]
             )
             assert_non_negative(
@@ -55,26 +55,25 @@ class CenterCriteria2Solver(BaseSolver):
 
     def setup_variables(self) -> None:
         """Set up optimization variables."""
-        for e in range(len(self.data.elements)):
+
+        for e, (element) in enumerate(self.data.elements):
             self.y_e.append([
                 self.solver.NumVar(0, self.solver.infinity(), f"y_{e}_{i}")
-                for i in range(len(self.data.coeffs_functional[e]))
+                for i in range(element.config.num_decision_variables)
             ])
             self.z_e.append([
                 self.solver.NumVar(0, self.solver.infinity(), f"z_{e}_{i}")
-                for i in range(len(self.data.elements[e].aggregated_plan_times))
+                for i in range(element.config.num_aggregated_products)
             ])
             self.t_0_e.append([
                 self.solver.NumVar(0, self.solver.infinity(), f"t_0_{e}_{i}")
-                for i in range(len(self.data.elements[e].aggregated_plan_times))
+                for i in range(element.config.num_aggregated_products)
             ])
 
     def setup_constraints(self) -> None:
         """Set up optimization constraints."""
 
-        for e in range(len(self.data.elements)):
-            element = self.data.elements[e]
-
+        for e, (element) in enumerate(self.data.elements):
             # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
             for i in range(element.config.num_constraints):
                 self.solver.Add(
@@ -139,6 +138,7 @@ class CenterCriteria2Solver(BaseSolver):
 
     def get_solution(self) -> Dict[str, Any]:
         """Extract and format solution values."""
+
         if self.solution is None:
             self.solution = {
                 "y_e": [[v.solution_value() for v in element] for element in self.y_e],
@@ -173,18 +173,18 @@ class CenterCriteria2Solver(BaseSolver):
             return
 
         center_objective = 0
-        for e in range(len(self.data.elements)):
+        for e, (element) in enumerate(self.data.elements):
             input_data = (
-                ("Functional Coefficients", format_tensor(self.data.elements[e].coeffs_functional)),
-                ("Aggregated Plan Costs", format_tensor(self.data.elements[e].aggregated_plan_costs)),
-                ("Resource Constraints", format_tensor(self.data.elements[e].resource_constraints)),
-                ("Aggregated Plan Times", format_tensor(self.data.elements[e].aggregated_plan_times)),
-                ("Directive Terms", format_tensor(self.data.elements[e].directive_terms)),
-                ("Number of Directive Products", format_tensor(self.data.elements[e].num_directive_products)),
-                ("Fines for Deadline", format_tensor(self.data.elements[e].fines_for_deadline)),
+                ("Functional Coefficients", format_tensor(element.coeffs_functional)),
+                ("Aggregated Plan Costs", format_tensor(element.aggregated_plan_costs)),
+                ("Resource Constraints", format_tensor(element.resource_constraints)),
+                ("Aggregated Plan Times", format_tensor(element.aggregated_plan_times)),
+                ("Directive Terms", format_tensor(element.directive_terms)),
+                ("Number of Directive Products", format_tensor(element.num_directive_products)),
+                ("Fines for Deadline", format_tensor(element.fines_for_deadline)),
             )
 
-            tab_out(f"\nInput data for element {self.data.elements[e].config.id}:", input_data)
+            tab_out(f"\nInput data for element {element.config.id}:", input_data)
 
             y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y_e"][e], dict_solved["z_e"][e], dict_solved["t_0_e"][e]
 
@@ -194,13 +194,13 @@ class CenterCriteria2Solver(BaseSolver):
                 ("t_0_e", format_tensor(t_0_e_solved)),
             )
 
-            tab_out(f"\nSolution for element {self.data.elements[e].config.id}:", solution_data)
+            tab_out(f"\nSolution for element {element.config.id}:", solution_data)
 
-            print(f"\nElement {self.data.elements[e].config.id} quality functionality: {format_tensor(objective)}")
+            print(f"\nElement {element.config.id} quality functionality: {format_tensor(objective)}")
 
-            center_objective += sum(self.data.coeffs_functional[e][i] * y_e_solved[i] for i in
-                                    range(len(self.data.coeffs_functional[e]))) - sum(
-                self.data.elements[e].fines_for_deadline[j] * z_e_solved[j] for j in
-                range(len(self.data.elements[e].aggregated_plan_times)))
+            center_objective += (sum(self.data.coeffs_functional[e][i] * y_e_solved[i]
+                                     for i in range(element.config.num_decision_variables))
+                                 - sum(element.fines_for_deadline[j] * z_e_solved[j]
+                                       for j in range(element.config.num_aggregated_products)))
 
         print(f"\nCenter (second criteria) quality functionality: {center_objective}")

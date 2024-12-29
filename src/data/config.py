@@ -5,6 +5,7 @@ from typing import List
 @dataclass(frozen=True)
 class SystemConfig:
     """System-wide configuration parameters."""
+
     NUM_ELEMENTS: int = 3  # K
     NUM_DECISION_VARIABLES: List[int] = field(default_factory=lambda: [6, 4, 3])  # n
     NUM_AGGREGATED_PRODUCTS: List[int] = field(default_factory=lambda: [5, 4, 2])  # n1 <= n

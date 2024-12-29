@@ -11,6 +11,7 @@ class DataGenerator:
 
     def __init__(self, config: SystemConfig, seed: int = 1810):
         """Initialize the data generator with system configuration."""
+
         assert_positive(config.NUM_ELEMENTS, "NUM_ELEMENTS")
         for i, (n) in enumerate(config.NUM_DECISION_VARIABLES):
             assert_positive(n, f"NUM_DECISION_VARIABLES[{i}]")
@@ -56,6 +57,7 @@ class DataGenerator:
 
     def generate_system_data(self) -> CenterData:
         """Generate complete system data."""
+
         elements_data = [
             self._generate_element_data(i)
             for i in range(self.config.NUM_ELEMENTS)

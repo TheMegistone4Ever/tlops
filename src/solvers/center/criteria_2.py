@@ -5,7 +5,7 @@ from models.element import ElementData
 from solvers.base import BaseSolver
 from solvers.element.default import ElementSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
-from utils.formatters import format_tensor, tab_out
+from utils.helpers import format_tensor, tab_out
 
 
 class CenterCriteria2Solver(BaseSolver):

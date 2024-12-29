@@ -3,7 +3,7 @@ from typing import List, Any, Dict
 from models.element import ElementData
 from solvers.base import BaseSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative
-from utils.formatters import format_tensor, tab_out
+from utils.helpers import format_tensor, tab_out
 
 
 class ElementSolver(BaseSolver):

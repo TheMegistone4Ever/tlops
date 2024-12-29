@@ -1,8 +1,11 @@
+from dataclasses import replace
 from numbers import Number
-from typing import Union, List, Any, Sequence
+from typing import Union, List, Any, Sequence, Optional
 
 import numpy as np
 from tabulate import tabulate
+
+from models.element import ElementData
 
 
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
@@ -70,6 +73,12 @@ def format_tensor(tensor: Union[Number, List[Any], np.ndarray], indent: int = 4,
         return str(x)
 
     return format_recursive(tensor)
+
+
+def copy_element_with_coeffs(element: ElementData, coeffs_functional: Optional[np.ndarray] = None) -> ElementData:
+    """Creates a copy of an ElementData instance with optionally modified coeffs_functional."""
+
+    return element if coeffs_functional is None else replace(element, coeffs_functional=coeffs_functional)
 
 
 if __name__ == "__main__":

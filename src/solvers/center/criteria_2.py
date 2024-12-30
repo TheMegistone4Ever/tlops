@@ -122,16 +122,16 @@ class CenterCriteria2Solver(BaseSolver):
         objective = self.solver.Objective()
 
         for e, (element) in enumerate(self.data.elements):
-            for c, (coeff) in enumerate(element.coeffs_functional):
+            for c, (coeff_func) in enumerate(element.coeffs_functional):
                 objective.SetCoefficient(
                     self.y[e][c],
-                    float(coeff)
+                    float(coeff_func)
                 )
 
-            for f, (fine) in enumerate(element.fines_for_deadline):
+            for f, (deadline_fine) in enumerate(element.fines_for_deadline):
                 objective.SetCoefficient(
                     self.z[e][f],
-                    float(-fine)
+                    float(-deadline_fine)
                 )
 
         objective.SetMaximization()

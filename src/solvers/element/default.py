@@ -85,10 +85,16 @@ class ElementSolver(BaseSolver):
         objective = self.solver.Objective()
 
         for i, (coeff_func) in enumerate(self.data.coeffs_functional):
-            objective.SetCoefficient(self.y_e[i], float(coeff_func))
+            objective.SetCoefficient(
+                self.y_e[i],
+                float(coeff_func)
+            )
 
         for i, (deadline_fine) in enumerate(self.data.fines_for_deadline):
-            objective.SetCoefficient(self.z_e[i], float(-deadline_fine))
+            objective.SetCoefficient(
+                self.z_e[i],
+                float(-deadline_fine)
+            )
 
         objective.SetMaximization()
 

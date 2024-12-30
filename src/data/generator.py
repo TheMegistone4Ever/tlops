@@ -36,7 +36,7 @@ class DataGenerator:
         element_data = ElementData(
             config=element_config,
             coeffs_functional=np.random.randint(1, 10, n),
-            resource_constraints=np.random.randint(1, 10, m) * 100,
+            resource_constraints=np.random.randint(5, 10, m) * 100,
             aggregated_plan_costs=np.random.randint(1, 5, (m, n)),
             aggregated_plan_times=np.random.randint(1, 5, n1),
             directive_terms=np.random.randint(5, 25, n1) * 5,

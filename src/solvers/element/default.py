@@ -87,16 +87,16 @@ class ElementSolver(BaseSolver):
 
         # If n2_e == 0, skip the following constraints
         if self.data.config.num_soft_deadline_products != 0:
-            # Soft deadline constraints: T_e_i - z_e_i <= D_e_i, i=1..n2_e
+            # Soft deadline constraints: T_e_i - D_e_i <= z_e_i, i=1..n2_e
             for i in range(self.data.config.num_soft_deadline_products):
-                self.solver.Add(T_e[i] - self.z_e[i] <= self.data.directive_terms[i])
+                self.solver.Add(T_e[i] - self.data.directive_terms[i] <= self.z_e[i])
 
         # If n2_e == n1_e, skip the following constraints
         if self.data.config.num_soft_deadline_products != self.data.config.num_aggregated_products:
-            # Hard deadline constraints: -z_e_i <= D_e_i - T_e_i <= z_e_i, i=n2_e+1..n1_e
+            # Hard deadline constraints: -z_e_i <= T_e_i - D_e_i <= z_e_i, i=n2_e+1..n1_e
             for i in range(self.data.config.num_soft_deadline_products, self.data.config.num_aggregated_products):
-                self.solver.Add(-self.z_e[i] <= self.data.directive_terms[i] - T_e[i])
-                self.solver.Add(self.data.directive_terms[i] - T_e[i] <= self.z_e[i])
+                self.solver.Add(-self.z_e[i] <= T_e[i] - self.data.directive_terms[i])
+                self.solver.Add(T_e[i] - self.data.directive_terms[i] <= self.z_e[i])
 
         # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1_e
         for i in range(self.data.config.num_aggregated_products):

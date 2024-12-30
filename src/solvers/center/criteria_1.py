@@ -213,4 +213,4 @@ class CenterCriteria1Solver(BaseSolver):
                                  - sum(element.fines_for_deadline[j] * z_e_solved[j]
                                        for j in range(element.config.num_aggregated_products)))
 
-        print(f"\nCenter (first criteria) quality functionality: {center_objective}")
+        print(f"\nCenter (first criteria) quality functionality: {format_tensor(center_objective)}")

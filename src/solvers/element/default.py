@@ -154,7 +154,7 @@ class ElementSolver(BaseSolver):
             ("Element Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
         )
 
-        tab_out(f"\nInput data for element {self.data.config.id}", input_data)
+        tab_out(f"\nInput data for element {format_tensor(self.data.config.id)}", input_data)
 
         y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y_e"], dict_solved["z_e"], dict_solved["t_0_e"]
 
@@ -164,6 +164,6 @@ class ElementSolver(BaseSolver):
             ("t_0_e", format_tensor(t_0_e_solved)),
         )
 
-        tab_out(f"\nSolution for element {self.data.config.id}", solution_data)
+        tab_out(f"\nSolution for element {format_tensor(self.data.config.id)}", solution_data)
 
-        print(f"\nElement {self.data.config.id} quality functionality: {format_tensor(objective)}")
+        print(f"\nElement {format_tensor(self.data.config.id)} quality functionality: {format_tensor(objective)}")

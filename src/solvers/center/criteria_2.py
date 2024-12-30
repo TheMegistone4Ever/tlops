@@ -198,7 +198,7 @@ class CenterCriteria2Solver(BaseSolver):
                 ("Element Fines for Deadline", format_tensor(element.fines_for_deadline)),
             )
 
-            tab_out(f"\nInput data for element {element.config.id}", input_data)
+            tab_out(f"\nInput data for element {format_tensor(element.config.id)}", input_data)
 
             y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y"][e], dict_solved["z"][e], dict_solved["t_0"][e]
 
@@ -208,9 +208,9 @@ class CenterCriteria2Solver(BaseSolver):
                 ("t_0_e", format_tensor(t_0_e_solved)),
             )
 
-            tab_out(f"\nSolution for element {element.config.id}", solution_data)
+            tab_out(f"\nSolution for element {format_tensor(element.config.id)}", solution_data)
 
-            print(f"\nElement {element.config.id} quality functionality: {format_tensor(objective)}")
+            print(f"\nElement {format_tensor(element.config.id)} quality functionality: {format_tensor(objective)}")
 
             center_objective += (sum(self.data.coeffs_functional[e][i] * y_e_solved[i]
                                      for i in range(element.config.num_decision_variables))

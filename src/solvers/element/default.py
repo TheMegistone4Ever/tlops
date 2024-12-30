@@ -2,7 +2,7 @@ from typing import List, Any, Dict
 
 from models.element import ElementData
 from solvers.base import BaseSolver
-from utils.assertions import assert_valid_dimensions, assert_non_negative
+from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
 from utils.helpers import format_tensor, tab_out
 
 
@@ -16,6 +16,26 @@ class ElementSolver(BaseSolver):
             [data.coeffs_functional],
             [(data.config.num_decision_variables,)],
             ["coeffs_functional"]
+        )
+        assert_non_negative(
+            data.config.id,
+            "data.config.id"
+        )
+        assert_positive(
+            data.config.num_decision_variables,
+            "data.config.num_decision_variables"
+        )
+        assert_positive(
+            data.config.num_aggregated_products,
+            "data.config.num_aggregated_products"
+        )
+        assert_non_negative(
+            data.config.num_soft_deadline_products,
+            "data.config.num_soft_deadline_products"
+        )
+        assert_positive(
+            data.config.num_constraints,
+            "data.config.num_constraints"
         )
 
         # Validate non-negative coefficients

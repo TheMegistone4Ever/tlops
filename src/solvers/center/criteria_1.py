@@ -33,7 +33,7 @@ class CenterCriteria1Solver(BaseSolver):
                 element.config.num_aggregated_products,
                 f"element.config.num_aggregated_products[{e}]"
             )
-            assert_positive(
+            assert_non_negative(
                 element.config.num_soft_deadline_products,
                 f"element.config.num_soft_deadline_products[{e}]"
             )

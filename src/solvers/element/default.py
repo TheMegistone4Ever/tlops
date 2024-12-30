@@ -66,6 +66,9 @@ class ElementSolver(BaseSolver):
     def setup_constraints(self) -> None:
         """Set up constraints for the element problem."""
 
+        T_e = [self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
+               for i in range(self.data.config.num_aggregated_products)]
+
         # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
         for i in range(self.data.config.num_constraints):
             self.solver.Add(
@@ -86,16 +89,14 @@ class ElementSolver(BaseSolver):
         if self.data.config.num_soft_deadline_products != 0:
             # Soft deadline constraints: T_e_i - z_e_i <= D_e_i, i=1..n2_e
             for i in range(self.data.config.num_soft_deadline_products):
-                T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
-                self.solver.Add(T_i - self.z_e[i] <= self.data.directive_terms[i])
+                self.solver.Add(T_e[i] - self.z_e[i] <= self.data.directive_terms[i])
 
         # If n2_e == n1_e, skip the following constraints
         if self.data.config.num_soft_deadline_products != self.data.config.num_aggregated_products:
             # Hard deadline constraints: -z_e_i <= D_e_i - T_e_i <= z_e_i, i=n2_e+1..n1_e
             for i in range(self.data.config.num_soft_deadline_products, self.data.config.num_aggregated_products):
-                T_i = self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
-                self.solver.Add(-self.z_e[i] <= self.data.directive_terms[i] - T_i)
-                self.solver.Add(self.data.directive_terms[i] - T_i <= self.z_e[i])
+                self.solver.Add(-self.z_e[i] <= self.data.directive_terms[i] - T_e[i])
+                self.solver.Add(self.data.directive_terms[i] - T_e[i] <= self.z_e[i])
 
         # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1_e
         for i in range(self.data.config.num_aggregated_products):

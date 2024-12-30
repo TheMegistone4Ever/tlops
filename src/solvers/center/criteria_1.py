@@ -75,6 +75,10 @@ class CenterCriteria1Solver(BaseSolver):
     def setup_constraints(self) -> None:
         """Set up optimization constraints."""
 
+        T = [[self.t_0[e][i] + element.aggregated_plan_times[i] * self.y[e][i]
+              for i in range(element.config.num_aggregated_products)]
+             for e, (element) in enumerate(self.data.elements)]
+
         for e, (element) in enumerate(self.data.elements):
             # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
             for i in range(element.config.num_constraints):
@@ -96,16 +100,14 @@ class CenterCriteria1Solver(BaseSolver):
             if element.config.num_soft_deadline_products != 0:
                 # Soft deadline constraints: T_e_i - z_e_i <= D_e_i, i=1..n2_e
                 for i in range(element.config.num_soft_deadline_products):
-                    T_i = self.t_0[e][i] + element.aggregated_plan_times[i] * self.y[e][i]
-                    self.solver.Add(T_i - self.z[e][i] <= element.directive_terms[i])
+                    self.solver.Add(T[e][i] - self.z[e][i] <= element.directive_terms[i])
 
             # If n2_e == n1_e, skip the following constraints
             if element.config.num_soft_deadline_products != element.config.num_aggregated_products:
                 # Hard deadline constraints: -z_e_i <= D_e_i - T_e_i <= z_e_i, i=n2_e+1..n1_e
                 for i in range(element.config.num_soft_deadline_products, element.config.num_aggregated_products):
-                    T_i = self.t_0[e][i] + element.aggregated_plan_times[i] * self.y[e][i]
-                    self.solver.Add(-self.z[e][i] <= element.directive_terms[i] - T_i)
-                    self.solver.Add(element.directive_terms[i] - T_i <= self.z[e][i])
+                    self.solver.Add(-self.z[e][i] <= element.directive_terms[i] - T[e][i])
+                    self.solver.Add(element.directive_terms[i] - T[e][i] <= self.z[e][i])
 
             # Minimum production constraints: y_e_i >= y_assigned_e_i, i=1..n1_e
             for i in range(element.config.num_aggregated_products):

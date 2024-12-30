@@ -3,20 +3,25 @@ from typing import Dict, List, Any
 from models.center import CenterData
 from solvers.base import BaseSolver
 from solvers.element.default import ElementSolver
-from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
+from utils.assertions import assert_valid_dimensions, assert_bounds, assert_non_negative, assert_positive
 from utils.helpers import format_tensor, tab_out, copy_element_coeffs
 
 
 class CenterCriteria2Solver(BaseSolver):
     """Implementation of the second optimization criteria for the center."""
 
-    def __init__(self, data: CenterData, delta: float):
+    def __init__(self, data: CenterData, delta: List[float]):
         super().__init__()
         for e, (element) in enumerate(data.elements):
             assert_valid_dimensions(
                 [data.coeffs_functional[e]],
                 [(data.elements[e].config.num_decision_variables,)],
                 [f"coeffs_functional[{e}]"]
+            )
+            assert_bounds(
+                delta[e],
+                (0, 1),
+                f"delta[{e}]"
             )
             assert_non_negative(
                 element.config.id,
@@ -109,7 +114,7 @@ class CenterCriteria2Solver(BaseSolver):
                     for i in range(element.config.num_decision_variables))
                 - sum(element.fines_for_deadline[j] * self.z[e][j]
                       for j in range(element.config.num_aggregated_products))
-                >= self.f_2opt[e] - self.delta
+                >= self.f_2opt[e] * (1 - self.delta[e])
             )
 
     def setup_objective(self) -> None:

@@ -11,5 +11,5 @@ class SystemConfig:
     NUM_AGGREGATED_PRODUCTS: List[int] = field(default_factory=lambda: [5, 4, 2])  # n1 <= n
     NUM_SOFT_DEADLINE_PRODUCTS: List[int] = field(default_factory=lambda: [3, 4, 1])  # n2 <= n1
     NUM_CONSTRAINTS: List[int] = field(default_factory=lambda: [4, 2, 3])  # m
-    FREE_ORDER: bool = True
-    DELTA: float = 10.0  # For second criteria
+    FREE_ORDER: bool = True  # priority sorting
+    DELTA: List[float] = field(default_factory=lambda: [.1, .3, 1])  # delta

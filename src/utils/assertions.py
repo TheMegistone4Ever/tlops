@@ -1,6 +1,8 @@
-from typing import Any, List
+from typing import Any, List, TypeVar
 
 import numpy as np
+
+T = TypeVar("T")
 
 
 def assert_positive(value: Any, name: str = "") -> None:
@@ -23,3 +25,10 @@ def assert_valid_dimensions(arrays: List[np.ndarray],
     for arr, dim, name in zip(arrays, expected_dims, names):
         assert arr.shape == dim, \
             f"Array {name} has invalid dimensions. Expected {dim}, got {arr.shape}"
+
+
+def assert_bounds(value: T, bounds: tuple[T, T], name: str = "") -> None:
+    """Assert that a value is within bounds."""
+
+    assert bounds[0] <= value <= bounds[1], \
+        f"Value {name} must be within bounds {bounds}, got {value}"

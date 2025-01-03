@@ -2,7 +2,8 @@ from dataclasses import replace
 from numbers import Number
 from typing import Union, List, Any, Sequence, Optional
 
-import numpy as np
+from numpy import ndarray, argsort, array
+from ortools.linear_solver.pywraplp import Variable
 from tabulate import tabulate
 
 from models.element import ElementData
@@ -15,7 +16,7 @@ def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str]
     print(tabulate(data, headers=headers, tablefmt="grid", numalign="right", stralign="left"))
 
 
-def format_tensor(tensor: Union[Number, List[Any], np.ndarray], indent: int = 4, precision: int = 2) -> str:
+def format_tensor(tensor: Union[Number, List[Any], ndarray], indent: int = 4, precision: int = 2) -> str:
     """
     Formats n-dimensional tensors (nested lists/arrays) for better readability.
 
@@ -40,7 +41,7 @@ def format_tensor(tensor: Union[Number, List[Any], np.ndarray], indent: int = 4,
     """
 
     # Convert numpy arrays to lists for consistent handling
-    if isinstance(tensor, np.ndarray):
+    if isinstance(tensor, ndarray):
         tensor = tensor.tolist()
 
     def format_number(x: Number) -> str:
@@ -53,7 +54,7 @@ def format_tensor(tensor: Union[Number, List[Any], np.ndarray], indent: int = 4,
     def is_nested(x: Any) -> bool:
         """Helper function to check if an object is a nested structure"""
 
-        return isinstance(x, list) and any(isinstance(item, (list, np.ndarray)) for item in x)
+        return isinstance(x, list) and any(isinstance(item, (list, ndarray)) for item in x)
 
     def format_recursive(x: Any, level: int = 0) -> str:
         """Recursively format nested structures"""
@@ -80,20 +81,40 @@ def format_tensor(tensor: Union[Number, List[Any], np.ndarray], indent: int = 4,
     return format_recursive(tensor)
 
 
-def copy_element_coeffs(element: ElementData, coeffs_functional: Optional[np.ndarray] = None) -> ElementData:
+def copy_element_coeffs(element: ElementData, coeffs_functional: Optional[ndarray] = None) -> ElementData:
     """Creates a copy of an ElementData instance with optionally modified coeffs_functional."""
 
     return element if coeffs_functional is None else replace(element, coeffs_functional=coeffs_functional)
+
+
+def calculate_priority_order(element: ElementData) -> List[int]:
+    """
+    Calculate priority ratio (α_j * y_j^з)/D_j for element products if free_order is enabled,
+    else the original order is kept. This implements the non-decreasing priority requirement.
+    """
+
+    return list(range(len(element.directive_terms))) if not element.config.free_order else argsort(
+        element.aggregated_plan_times * element.num_directive_products / element.directive_terms).tolist()
+
+
+def get_completion_times(element: ElementData, y_e: List[Variable], t_0_e: List[Variable],
+                         order: List[int]) -> List[Any]:
+    """
+    Create completion time expressions for element products based on priority order.
+    """
+
+    return [t_0_e[order[i]] + element.aggregated_plan_times[order[i]] * y_e[order[i]]
+            for i in range(element.config.num_aggregated_products)]
 
 
 if __name__ == "__main__":
     num_0d = 42
     list_1d = [1, 2, 3]
     list_2d = [[1, 2], [3, 4]]
-    array_1d = np.array([1, 2, 3])
-    array_2d = np.array([[1, 2], [3, 4]])
+    array_1d = array([1, 2, 3])
+    array_2d = array([[1, 2], [3, 4]])
     tensor_3d_int = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
-    tensor_3d_float = np.array(tensor_3d_int, dtype=float) + .123456789
+    tensor_3d_float = array(tensor_3d_int, dtype=float) + .123456789
 
     print(f"Number:\n{format_tensor(num_0d)}", end="\n\n")
     print(f"1D List:\n{format_tensor(list_1d)}", end="\n\n")

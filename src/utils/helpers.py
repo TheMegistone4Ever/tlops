@@ -13,7 +13,7 @@ def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str]
     """Pretty-prints a table with the given data and headers."""
 
     print(f"\n{subscription}:")
-    print(tabulate(data, headers=headers, tablefmt="grid", numalign="right", stralign="left"))
+    print(tabulate(data, headers, "grid"))
 
 
 def format_tensor(tensor: Union[Number, List[Any], ndarray], indent: int = 4, precision: int = 2) -> str:

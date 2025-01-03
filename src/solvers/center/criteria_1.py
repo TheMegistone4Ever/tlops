@@ -159,7 +159,7 @@ class CenterCriteria1Solver(BaseSolver):
     def print_results(self) -> None:
         """Print the results of the optimization for the center (first criteria)."""
 
-        center_data = (
+        tab_out(f"\nCenter data (first criteria)", (
             ("Number of Elements", format_tensor(self.data.config.num_elements)),
             ("Number of Constraints",
              format_tensor([element.config.num_constraints for element in self.data.elements])),
@@ -169,9 +169,7 @@ class CenterCriteria1Solver(BaseSolver):
              format_tensor([element.config.num_aggregated_products for element in self.data.elements])),
             ("Number of Soft Deadline Products",
              format_tensor([element.config.num_soft_deadline_products for element in self.data.elements])),
-        )
-
-        tab_out(f"\nCenter data (first criteria)", center_data)
+        ))
 
         objective, dict_solved = self.solve()
 
@@ -181,7 +179,7 @@ class CenterCriteria1Solver(BaseSolver):
 
         center_objective = 0
         for e, (element) in enumerate(self.data.elements):
-            input_data = (
+            tab_out(f"\nInput data for element {format_tensor(element.config.id)}", (
                 ("Element Functional Coefficients", format_tensor(element.coeffs_functional)),
                 ("Center Functional Coefficients for element", format_tensor(self.data.coeffs_functional[e])),
                 ("Element Aggregated Plan Costs", format_tensor(element.aggregated_plan_costs)),
@@ -191,18 +189,14 @@ class CenterCriteria1Solver(BaseSolver):
                 ("Element Number of Directive Products", format_tensor(element.num_directive_products)),
                 ("Element Fines for Deadline", format_tensor(element.fines_for_deadline)),
                 ("Element Free Order", format_tensor(element.config.free_order)),
-            )
+            ))
 
-            tab_out(f"\nInput data for element {format_tensor(element.config.id)}", input_data)
-
-            solution_data = (
+            tab_out(f"\nSolution for element {format_tensor(element.config.id)}", (
                 ("y_e", format_tensor(dict_solved["y"][e])),
                 ("z_e", format_tensor(dict_solved["z"][e])),
                 ("t_0_e", format_tensor(dict_solved["t_0"][e])),
-                "order", format_tensor(self.priority_order[e]),
-            )
-
-            tab_out(f"\nSolution for element {format_tensor(element.config.id)}", solution_data)
+                ("order", format_tensor(self.priority_order[e])),
+            ))
 
             print(f"\nElement {format_tensor(element.config.id)} quality functionality: {format_tensor(objective)}")
 

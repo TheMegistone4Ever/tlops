@@ -144,7 +144,7 @@ class ElementSolver(BaseSolver):
             print("\nNo optimal solution found.")
             return
 
-        input_data = (
+        tab_out(f"\nInput data for element {format_tensor(self.data.config.id)}", (
             ("Element Functional Coefficients", format_tensor(self.data.coeffs_functional)),
             ("Element Aggregated Plan Costs", format_tensor(self.data.aggregated_plan_costs)),
             ("Element Resource Constraints", format_tensor(self.data.resource_constraints)),
@@ -153,17 +153,13 @@ class ElementSolver(BaseSolver):
             ("Element Number of Directive Products", format_tensor(self.data.num_directive_products)),
             ("Element Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
             ("Element Free Order", format_tensor(self.data.config.free_order)),
-        )
+        ))
 
-        tab_out(f"\nInput data for element {format_tensor(self.data.config.id)}", input_data)
-
-        solution_data = (
+        tab_out(f"\nSolution for element {format_tensor(self.data.config.id)}", (
             ("y_e", format_tensor(dict_solved["y_e"])),
             ("z_e", format_tensor(dict_solved["z_e"])),
             ("t_0_e", format_tensor(dict_solved["t_0_e"])),
             ("order", format_tensor(self.priority_order_e)),
-        )
-
-        tab_out(f"\nSolution for element {format_tensor(self.data.config.id)}", solution_data)
+        ))
 
         print(f"\nElement {format_tensor(self.data.config.id)} quality functionality: {format_tensor(objective)}")

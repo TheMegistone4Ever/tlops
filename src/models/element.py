@@ -12,6 +12,7 @@ class ElementConfig:
     num_aggregated_products: int
     num_soft_deadline_products: int
     num_constraints: int
+    free_order: bool
 
 
 @dataclass(frozen=True)

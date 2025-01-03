@@ -30,7 +30,8 @@ class DataGenerator:
             num_decision_variables=n,
             num_aggregated_products=n1,
             num_soft_deadline_products=self.config.NUM_SOFT_DEADLINE_PRODUCTS[element_idx],
-            num_constraints=m
+            num_constraints=m,
+            free_order=False,
         )
 
         element_data = ElementData(
@@ -41,7 +42,7 @@ class DataGenerator:
             aggregated_plan_times=np.random.randint(1, 5, n1),
             directive_terms=np.random.randint(5, 25, n1) * 5,
             num_directive_products=np.random.randint(5, 10, n1),
-            fines_for_deadline=np.random.randint(1, 10, n1)
+            fines_for_deadline=np.random.randint(1, 10, n1),
         )
 
         return element_data
@@ -61,13 +62,12 @@ class DataGenerator:
 
         center_config = CenterConfig(
             num_elements=self.config.NUM_ELEMENTS,
-            free_order=self.config.FREE_ORDER,
         )
 
         center_data = CenterData(
             config=center_config,
             coeffs_functional=center_coeffs,
-            elements=elements_data
+            elements=elements_data,
         )
 
         return center_data

@@ -3,7 +3,7 @@ from typing import List, Any, Dict
 from models.element import ElementData
 from solvers.base import BaseSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
-from utils.helpers import format_tensor, tab_out
+from utils.helpers import format_tensor, tab_out, calculate_priority_order, get_completion_times
 
 
 class ElementSolver(BaseSolver):
@@ -46,6 +46,7 @@ class ElementSolver(BaseSolver):
         self.y_e: List[Any] = list()
         self.z_e: List[Any] = list()
         self.t_0_e: List[Any] = list()
+        self.priority_order_e: List[int] = calculate_priority_order(data)
 
     def setup_variables(self) -> None:
         """Set up optimization variables for the element problem."""
@@ -66,8 +67,7 @@ class ElementSolver(BaseSolver):
     def setup_constraints(self) -> None:
         """Set up constraints for the element problem."""
 
-        T_e = [self.t_0_e[i] + self.data.aggregated_plan_times[i] * self.y_e[i]
-               for i in range(self.data.config.num_aggregated_products)]
+        T_e = get_completion_times(self.data, self.y_e, self.t_0_e, self.priority_order_e)
 
         # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
         for i in range(self.data.config.num_constraints):
@@ -152,16 +152,16 @@ class ElementSolver(BaseSolver):
             ("Element Directive Terms", format_tensor(self.data.directive_terms)),
             ("Element Number of Directive Products", format_tensor(self.data.num_directive_products)),
             ("Element Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
+            ("Element Free Order", format_tensor(self.data.config.free_order)),
         )
 
         tab_out(f"\nInput data for element {format_tensor(self.data.config.id)}", input_data)
 
-        y_e_solved, z_e_solved, t_0_e_solved = dict_solved["y_e"], dict_solved["z_e"], dict_solved["t_0_e"]
-
         solution_data = (
-            ("y_e", format_tensor(y_e_solved)),
-            ("z_e", format_tensor(z_e_solved)),
-            ("t_0_e", format_tensor(t_0_e_solved)),
+            ("y_e", format_tensor(dict_solved["y_e"])),
+            ("z_e", format_tensor(dict_solved["z_e"])),
+            ("t_0_e", format_tensor(dict_solved["t_0_e"])),
+            ("order", format_tensor(self.priority_order_e)),
         )
 
         tab_out(f"\nSolution for element {format_tensor(self.data.config.id)}", solution_data)

@@ -2,7 +2,7 @@ from dataclasses import replace
 from numbers import Number
 from typing import Union, List, Any, Sequence, Optional
 
-from numpy import ndarray, argsort, array
+from numpy import ndarray, argsort, array, flip
 from ortools.linear_solver.pywraplp import Variable
 from tabulate import tabulate
 
@@ -93,8 +93,8 @@ def calculate_priority_order(element: ElementData) -> List[int]:
     else the original order is kept. This implements the non-decreasing priority requirement.
     """
 
-    return list(range(len(element.directive_terms))) if not element.config.free_order else argsort(
-        element.aggregated_plan_times * element.num_directive_products / element.directive_terms).tolist()
+    return list(range(len(element.directive_terms))) if not element.config.free_order else flip(argsort(
+        element.aggregated_plan_times * element.num_directive_products / element.directive_terms)).tolist()
 
 
 def get_completion_times(element: ElementData, y_e: List[Variable], t_0_e: List[Variable],

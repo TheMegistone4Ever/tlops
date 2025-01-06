@@ -46,7 +46,7 @@ class ElementSolver(BaseSolver):
         self.y_e: List[Any] = list()
         self.z_e: List[Any] = list()
         self.t_0_e: List[Any] = list()
-        self.priority_order_e: List[int] = calculate_priority_order(data)
+        self.order_e: List[int] = calculate_priority_order(data)
 
     def setup_variables(self) -> None:
         """Set up optimization variables for the element problem."""
@@ -67,7 +67,7 @@ class ElementSolver(BaseSolver):
     def setup_constraints(self) -> None:
         """Set up constraints for the element problem."""
 
-        T_e = get_completion_times(self.data, self.y_e, self.t_0_e, self.priority_order_e)
+        T_e = get_completion_times(self.data, self.y_e, self.t_0_e)
 
         # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
         for i in range(self.data.config.num_constraints):
@@ -80,8 +80,8 @@ class ElementSolver(BaseSolver):
         # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
         for i in range(1, self.data.config.num_soft_deadline_products):
             self.solver.Add(
-                self.t_0_e[i] >= self.t_0_e[i - 1] +
-                sum(self.data.aggregated_plan_times[j] * self.y_e[j]
+                self.t_0_e[self.order_e[i]] >= self.t_0_e[self.order_e[0]] +
+                sum(self.data.aggregated_plan_times[self.order_e[j]] * self.y_e[self.order_e[j]]
                     for j in range(i))
             )
 
@@ -159,7 +159,7 @@ class ElementSolver(BaseSolver):
             ("y_e", format_tensor(dict_solved["y_e"])),
             ("z_e", format_tensor(dict_solved["z_e"])),
             ("t_0_e", format_tensor(dict_solved["t_0_e"])),
-            ("order", format_tensor(self.priority_order_e)),
+            ("order", format_tensor(self.order_e)),
         ))
 
         print(f"\nElement {format_tensor(self.data.config.id)} quality functionality: {format_tensor(objective)}")

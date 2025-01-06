@@ -47,7 +47,7 @@ class CenterCriteria1Solver(BaseSolver):
         self.z: List[List[Any]] = list()
         self.t_0: List[List[Any]] = list()
         self.f_1opt: List[float] = list()
-        self.priority_order: List[List[int]] = [calculate_priority_order(element) for element in data.elements]
+        self.order: List[List[int]] = [calculate_priority_order(element) for element in data.elements]
 
         for e in range(data.config.num_elements):
             element_data = copy_element_coeffs(data.elements[e], data.coeffs_functional[e])
@@ -77,7 +77,7 @@ class CenterCriteria1Solver(BaseSolver):
         """Set up optimization constraints."""
 
         for e, (element) in enumerate(self.data.elements):
-            T_e = get_completion_times(element, self.y[e], self.t_0[e], self.priority_order[e])
+            T_e = get_completion_times(element, self.y[e], self.t_0[e])
 
             # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
             for i in range(element.config.num_constraints):
@@ -90,8 +90,8 @@ class CenterCriteria1Solver(BaseSolver):
             # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
             for i in range(1, element.config.num_soft_deadline_products):
                 self.solver.Add(
-                    self.t_0[e][i] >= self.t_0[e][i - 1] +
-                    sum(element.aggregated_plan_times[j] * self.y[e][j]
+                    self.t_0[e][i] >= self.t_0[e][0] +
+                    sum(element.aggregated_plan_times[self.order[e][j]] * self.y[e][self.order[e][j]]
                         for j in range(i))
                 )
 
@@ -195,7 +195,7 @@ class CenterCriteria1Solver(BaseSolver):
                 ("y_e", format_tensor(dict_solved["y"][e])),
                 ("z_e", format_tensor(dict_solved["z"][e])),
                 ("t_0_e", format_tensor(dict_solved["t_0"][e])),
-                ("order", format_tensor(self.priority_order[e])),
+                ("order", format_tensor(self.order[e])),
             ))
 
             print(f"\nElement {format_tensor(element.config.id)} quality functionality: {format_tensor(objective)}")

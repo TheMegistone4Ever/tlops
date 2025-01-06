@@ -97,14 +97,12 @@ def calculate_priority_order(element: ElementData) -> List[int]:
         element.aggregated_plan_times * element.num_directive_products / element.directive_terms)).tolist()
 
 
-def get_completion_times(element: ElementData, y_e: List[Variable], t_0_e: List[Variable],
-                         order: List[int]) -> List[Any]:
+def get_completion_times(element: ElementData, y_e: List[Variable], t_0_e: List[Variable]) -> List[Any]:
     """
     Create completion time expressions for element products based on priority order.
     """
 
-    return [t_0_e[order[i]] + element.aggregated_plan_times[order[i]] * y_e[order[i]]
-            for i in range(element.config.num_aggregated_products)]
+    return [t_0_e[i] + element.aggregated_plan_times[i] * y_e[i] for i in range(element.config.num_aggregated_products)]
 
 
 if __name__ == "__main__":

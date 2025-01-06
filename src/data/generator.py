@@ -31,7 +31,7 @@ class DataGenerator:
             num_aggregated_products=n1,
             num_soft_deadline_products=self.config.NUM_SOFT_DEADLINE_PRODUCTS[element_idx],
             num_constraints=m,
-            free_order=False,
+            free_order=True,
         )
 
         element_data = ElementData(
@@ -41,7 +41,7 @@ class DataGenerator:
             aggregated_plan_costs=np.random.randint(1, 5, (m, n)),
             aggregated_plan_times=np.random.randint(1, 5, n1),
             directive_terms=np.random.randint(5, 25, n1) * 5,
-            num_directive_products=np.random.randint(5, 10, n1),
+            num_directive_products=np.random.randint(5, 15, n1),
             fines_for_deadline=np.random.randint(1, 10, n1),
         )
 

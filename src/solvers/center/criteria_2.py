@@ -1,10 +1,12 @@
 from typing import Dict, List, Any
 
 from models.center import CenterData
+from models.element import ElementType
 from solvers.base import BaseSolver
 from solvers.element.default import ElementSolver
 from utils.assertions import assert_valid_dimensions, assert_bounds, assert_non_negative, assert_positive
-from utils.helpers import format_tensor, tab_out, copy_element_coeffs, calculate_priority_order, get_completion_times
+from utils.helpers import (format_tensor, tab_out, copy_element_coeffs, calculate_priority_order, get_completion_times,
+                           lp_sum)
 
 
 class CenterCriteria2Solver(BaseSolver):
@@ -85,12 +87,12 @@ class CenterCriteria2Solver(BaseSolver):
             # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
             for i in range(element.config.num_constraints):
                 self.solver.Add(
-                    sum(element.aggregated_plan_costs[i][j] * self.y[e][j]
-                        for j in range(element.config.num_decision_variables))
+                    lp_sum(element.aggregated_plan_costs[i][j] * self.y[e][j]
+                           for j in range(element.config.num_decision_variables))
                     <= element.resource_constraints[i]
                 )
 
-            if element.config.type == 1:
+            if element.config.type == ElementType.SEQUENTIAL:
                 # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
                 for i in range(element.config.num_aggregated_products):
                     self.solver.Add(self.t_0[e][self.order[e][i]] >= T_e[i])
@@ -114,10 +116,10 @@ class CenterCriteria2Solver(BaseSolver):
 
             # Suboptimality Bound Constraint: VS_COEFFS_CENTER_FUNCTIONAL[e]^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j) >= f_2opt_e - DELTA
             self.solver.Add(
-                sum(self.data.coeffs_functional[e][i] * self.y[e][i]
-                    for i in range(element.config.num_decision_variables))
-                - sum(element.fines_for_deadline[j] * self.z[e][j]
-                      for j in range(element.config.num_aggregated_products))
+                lp_sum(self.data.coeffs_functional[e][i] * self.y[e][i]
+                       for i in range(element.config.num_decision_variables))
+                - lp_sum(element.fines_for_deadline[j] * self.z[e][j]
+                         for j in range(element.config.num_aggregated_products))
                 >= self.f_2opt[e] * (1 - self.delta[e])
             )
 

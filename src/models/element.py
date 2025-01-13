@@ -1,6 +1,12 @@
 from dataclasses import dataclass
+from enum import IntEnum
 
-import numpy as np
+from numpy import ndarray
+
+
+class ElementType(IntEnum):
+    PARALLEL = 0
+    SEQUENTIAL = 1
 
 
 @dataclass(frozen=True)
@@ -13,7 +19,7 @@ class ElementConfig:
     num_soft_deadline_products: int
     num_constraints: int
     free_order: bool
-    type: int
+    type: ElementType
 
 
 @dataclass(frozen=True)
@@ -21,10 +27,10 @@ class ElementData:
     """Data container for element-specific optimization parameters."""
 
     config: ElementConfig
-    coeffs_functional: np.ndarray
-    resource_constraints: np.ndarray
-    aggregated_plan_costs: np.ndarray
-    aggregated_plan_times: np.ndarray
-    directive_terms: np.ndarray
-    num_directive_products: np.ndarray
-    fines_for_deadline: np.ndarray
+    coeffs_functional: ndarray
+    resource_constraints: ndarray
+    aggregated_plan_costs: ndarray
+    aggregated_plan_times: ndarray
+    directive_terms: ndarray
+    num_directive_products: ndarray
+    fines_for_deadline: ndarray

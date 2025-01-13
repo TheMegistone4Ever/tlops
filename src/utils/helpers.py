@@ -1,12 +1,12 @@
 from dataclasses import replace
 from numbers import Number
-from typing import Union, List, Any, Sequence, Optional
+from typing import Union, List, Any, Sequence, Optional, TypeVar, Protocol, Iterable
 
 from numpy import ndarray, argsort, array, flip
 from ortools.linear_solver.pywraplp import Variable
 from tabulate import tabulate
 
-from models.element import ElementData
+from models.element import ElementData, ElementType
 
 
 def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str] = ("Parameter", "Value")) -> None:
@@ -98,17 +98,49 @@ def calculate_priority_order(element: ElementData) -> List[int]:
 
 
 def get_completion_times(element: ElementData, y_e: List[Variable], t_0_e: List[Variable],
-                         order: List[int]) -> List[Variable]:
+                         order: List[int]) -> List[Any]:
     """
     Create completion time expressions for element products based on priority order.
     """
 
-    if element.config.type == 0:
+    if element.config.type == ElementType.PARALLEL:
         return [t_0_e[i] + element.aggregated_plan_times[i] * y_e[i]
                 for i in range(element.config.num_aggregated_products)]
-    elif element.config.type == 1:
-        return [t_0_e[order[0]] + sum(element.aggregated_plan_times[order[j]] * y_e[order[j]] for j in range(i))
+    elif element.config.type == ElementType.SEQUENTIAL:
+        return [t_0_e[order[0]] + lp_sum(element.aggregated_plan_times[order[j]] * y_e[order[j]] for j in range(i))
                 for i in range(element.config.num_aggregated_products)]
+
+
+class SupportsAdd(Protocol):
+    def __add__(self, other: "SupportsAdd") -> "SupportsAdd": ...
+
+
+T = TypeVar("T", bound=SupportsAdd)
+
+
+def lp_sum(variables: Iterable[T]) -> T | Any:
+    """
+    Summation function for linear programming variables that supports any sequence
+    of elements implementing the addition operator.
+
+    Args:
+        variables: A sequence of addable elements (typically LP variables or expressions)
+
+    Returns:
+        The sum of all elements in the sequence.
+        Returns 0 if a sequence is empty.
+    """
+
+    iterator = iter(variables)
+    try:
+        result = next(iterator)
+    except StopIteration:
+        return 0
+
+    for value in iterator:
+        result += value
+
+    return result
 
 
 if __name__ == "__main__":

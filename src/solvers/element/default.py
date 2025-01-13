@@ -1,9 +1,9 @@
 from typing import List, Any, Dict
 
-from models.element import ElementData
+from models.element import ElementData, ElementType
 from solvers.base import BaseSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
-from utils.helpers import format_tensor, tab_out, calculate_priority_order, get_completion_times
+from utils.helpers import format_tensor, tab_out, calculate_priority_order, get_completion_times, lp_sum
 
 
 class ElementSolver(BaseSolver):
@@ -72,12 +72,12 @@ class ElementSolver(BaseSolver):
         # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
         for i in range(self.data.config.num_constraints):
             self.solver.Add(
-                sum(self.data.aggregated_plan_costs[i][j] * self.y_e[j]
-                    for j in range(self.data.config.num_decision_variables))
+                lp_sum(self.data.aggregated_plan_costs[i][j] * self.y_e[j]
+                       for j in range(self.data.config.num_decision_variables))
                 <= self.data.resource_constraints[i]
             )
 
-        if self.data.config.type == 1:
+        if self.data.config.type == ElementType.SEQUENTIAL:
             # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
             for i in range(self.data.config.num_aggregated_products):
                 self.solver.Add(self.t_0_e[self.order_e[i]] >= T_e[i])

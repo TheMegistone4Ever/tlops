@@ -93,7 +93,7 @@ def calculate_priority_order(element: ElementData) -> List[int]:
     else the original order is kept. This implements the non-decreasing priority requirement.
     """
 
-    return list(range(len(element.directive_terms))) if not element.config.free_order else flip(argsort(
+    return list(range(element.config.num_aggregated_products)) if not element.config.free_order else flip(argsort(
         element.aggregated_plan_times * element.num_directive_products / element.directive_terms)).tolist()
 
 

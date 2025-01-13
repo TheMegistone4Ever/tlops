@@ -78,7 +78,7 @@ class ElementSolver(BaseSolver):
             )
 
         # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
-        for i in range(1, self.data.config.num_soft_deadline_products):
+        for i in range(1, self.data.config.num_aggregated_products):
             self.solver.Add(
                 self.t_0_e[self.order_e[i]] >= self.t_0_e[self.order_e[0]] +
                 sum(self.data.aggregated_plan_times[self.order_e[j]] * self.y_e[self.order_e[j]]
@@ -138,9 +138,9 @@ class ElementSolver(BaseSolver):
     def print_results(self) -> None:
         """Print the results of the optimization for the element."""
 
-        objective, dict_solved = self.solve()
+        element_objective, dict_solved = self.solve()
 
-        if objective == float("inf"):
+        if element_objective == float("inf"):
             print("\nNo optimal solution found.")
             return
 
@@ -162,4 +162,4 @@ class ElementSolver(BaseSolver):
             ("order", format_tensor(self.order_e)),
         ))
 
-        print(f"\nElement {format_tensor(self.data.config.id)} quality functionality: {format_tensor(objective)}")
+        print(f"\nElement {format_tensor(self.data.config.id)} quality functionality: {format_tensor(element_objective)}")

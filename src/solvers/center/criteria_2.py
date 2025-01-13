@@ -91,9 +91,9 @@ class CenterCriteria2Solver(BaseSolver):
                 )
 
             # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
-            for i in range(1, element.config.num_soft_deadline_products):
+            for i in range(1, element.config.num_aggregated_products):
                 self.solver.Add(
-                    self.t_0[e][i] >= self.t_0[e][0] +
+                    self.t_0[e][self.order[e][i]] >= self.t_0[e][self.order[e][0]] +
                     sum(element.aggregated_plan_times[self.order[e][j]] * self.y[e][self.order[e][j]]
                         for j in range(i))
                 )
@@ -128,7 +128,7 @@ class CenterCriteria2Solver(BaseSolver):
         """
         Set up the objective function.
 
-        max (C_e^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
+        max sum_e(C_e^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
         """
 
         objective = self.solver.Objective()
@@ -175,13 +175,13 @@ class CenterCriteria2Solver(BaseSolver):
             ("Delta", format_tensor(self.delta)),
         ))
 
-        objective, dict_solved = self.solve()
+        center_objective, dict_solved = self.solve()
 
-        if objective == float("inf"):
+        if center_objective == float("inf"):
             print("\nNo optimal solution found.")
             return
 
-        center_objective = 0
+        center_quality_functional = 0
         for e, (element) in enumerate(self.data.elements):
             tab_out(f"\nInput data for element {format_tensor(element.config.id)}", (
                 ("Element Functional Coefficients", format_tensor(element.coeffs_functional)),
@@ -202,11 +202,18 @@ class CenterCriteria2Solver(BaseSolver):
                 ("order", format_tensor(self.order[e])),
             ))
 
-            print(f"\nElement {format_tensor(element.config.id)} quality functionality: {format_tensor(objective)}")
+            # max (C_e^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
+            element_quality_functional = (sum(element.coeffs_functional[i] * dict_solved["y"][e][i]
+                                                for i in range(element.config.num_decision_variables))
+                                            - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
+                                                    for j in range(element.config.num_aggregated_products)))
 
-            center_objective += (sum(self.data.coeffs_functional[e][i] * dict_solved["y"][e][i]
+            print(f"\nElement {format_tensor(element.config.id)} quality functionality: {format_tensor(element_quality_functional)}")
+
+            # max (VS_COEFFS_CENTER_FUNCTIONAL[e]^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
+            center_quality_functional += (sum(self.data.coeffs_functional[e][i] * dict_solved["y"][e][i]
                                      for i in range(element.config.num_decision_variables))
                                  - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
                                        for j in range(element.config.num_aggregated_products)))
 
-        print(f"\nCenter (second criteria) quality functionality: {format_tensor(center_objective)}")
+        print(f"\nCenter (second criteria) quality functionality: {format_tensor(center_quality_functional)}")

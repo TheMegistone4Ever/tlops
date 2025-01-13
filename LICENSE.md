@@ -16,8 +16,9 @@ by [Mykyta Kyselov (TheMegistone4Ever)](https://github.com/TheMegistone4Ever).
 
 ### Under the following terms:
 
-- **Attribution (BY):** You must give appropriate credit, provide a link to the license, and indicate if changes were
-  made. You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
+- **Attribution (BY):** You must give the appropriate credit, provide a link to the license, and indicate if changes
+  were made.
+  You may do so in any reasonable manner, but not in any way that suggests the licensor endorses you or your use.
 
 - **NonCommercial (NC):** You may not use the material for commercial purposes.
 
@@ -36,5 +37,5 @@ using the material.
 ## Note:
 
 This license is designed to protect the author's rights and ensure fair use of the work. Any questions regarding the use
-of the material outside the scope of this license can be addressed on an individual basis.
+of the material outside the scope of this license can be addressed individually.
 Contact [zeusmobilenick@gmail.com](mailto:zeusmobilenick@gmail.com) for more information.

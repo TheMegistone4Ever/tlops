@@ -3,7 +3,7 @@ from typing import List, Any, Dict
 from models.element import ElementData, ElementType
 from solvers.base import BaseSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
-from utils.helpers import format_tensor, tab_out, calculate_priority_order, get_completion_times, lp_sum
+from utils.helpers import stringify, tab_out, calculate_priority_order, get_completion_times, lp_sum
 
 
 class ElementSolver(BaseSolver):
@@ -141,23 +141,23 @@ class ElementSolver(BaseSolver):
             print("\nNo optimal solution found.")
             return
 
-        tab_out(f"\nInput data for element {format_tensor(self.data.config.id)}", (
-            ("Element Functional Coefficients", format_tensor(self.data.coeffs_functional)),
-            ("Element Aggregated Plan Costs", format_tensor(self.data.aggregated_plan_costs)),
-            ("Element Resource Constraints", format_tensor(self.data.resource_constraints)),
-            ("Element Aggregated Plan Times", format_tensor(self.data.aggregated_plan_times)),
-            ("Element Directive Terms", format_tensor(self.data.directive_terms)),
-            ("Element Number of Directive Products", format_tensor(self.data.num_directive_products)),
-            ("Element Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
-            ("Element Free Order", format_tensor(self.data.config.free_order)),
-            ("Element Type", format_tensor(self.data.config.type)),
+        tab_out(f"\nInput data for element {stringify(self.data.config.id)}", (
+            ("Element Functional Coefficients", stringify(self.data.coeffs_functional)),
+            ("Element Aggregated Plan Costs", stringify(self.data.aggregated_plan_costs)),
+            ("Element Resource Constraints", stringify(self.data.resource_constraints)),
+            ("Element Aggregated Plan Times", stringify(self.data.aggregated_plan_times)),
+            ("Element Directive Terms", stringify(self.data.directive_terms)),
+            ("Element Number of Directive Products", stringify(self.data.num_directive_products)),
+            ("Element Fines for Deadline", stringify(self.data.fines_for_deadline)),
+            ("Element Free Order", stringify(self.data.config.free_order)),
+            ("Element Type", stringify(self.data.config.type)),
         ))
 
-        tab_out(f"\nSolution for element {format_tensor(self.data.config.id)}", (
-            ("y_e", format_tensor(dict_solved["y_e"])),
-            ("z_e", format_tensor(dict_solved["z_e"])),
-            ("t_0_e", format_tensor(dict_solved["t_0_e"])),
-            ("order", format_tensor(self.order_e)),
+        tab_out(f"\nSolution for element {stringify(self.data.config.id)}", (
+            ("y_e", stringify(dict_solved["y_e"])),
+            ("z_e", stringify(dict_solved["z_e"])),
+            ("t_0_e", stringify(dict_solved["t_0_e"])),
+            ("order", stringify(self.order_e)),
         ))
 
-        print(f"\nElement {format_tensor(self.data.config.id)} quality functionality: {format_tensor(element_objective)}")
+        print(f"\nElement {stringify(self.data.config.id)} quality functionality: {stringify(element_objective)}")

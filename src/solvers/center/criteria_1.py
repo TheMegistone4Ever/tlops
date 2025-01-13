@@ -5,7 +5,7 @@ from models.element import ElementType
 from solvers.base import BaseSolver
 from solvers.element.default import ElementSolver
 from utils.assertions import assert_valid_dimensions, assert_non_negative, assert_positive
-from utils.helpers import (format_tensor, tab_out, copy_element_coeffs, calculate_priority_order, get_completion_times,
+from utils.helpers import (stringify, tab_out, copy_element_coeffs, calculate_priority_order, get_completion_times,
                            lp_sum)
 
 
@@ -156,15 +156,14 @@ class CenterCriteria1Solver(BaseSolver):
         """Print the results of the optimization for the center (first criteria)."""
 
         tab_out(f"\nCenter data (first criteria)", (
-            ("Number of Elements", format_tensor(self.data.config.num_elements)),
-            ("Number of Constraints",
-             format_tensor([element.config.num_constraints for element in self.data.elements])),
+            ("Number of Elements", stringify(self.data.config.num_elements)),
+            ("Number of Constraints", stringify([element.config.num_constraints for element in self.data.elements])),
             ("Number of Decision Variables",
-             format_tensor([element.config.num_decision_variables for element in self.data.elements])),
+             stringify([element.config.num_decision_variables for element in self.data.elements])),
             ("Number of Aggregated Products",
-             format_tensor([element.config.num_aggregated_products for element in self.data.elements])),
+             stringify([element.config.num_aggregated_products for element in self.data.elements])),
             ("Number of Soft Deadline Products",
-             format_tensor([element.config.num_soft_deadline_products for element in self.data.elements])),
+             stringify([element.config.num_soft_deadline_products for element in self.data.elements])),
         ))
 
         center_objective, dict_solved = self.solve()
@@ -173,40 +172,40 @@ class CenterCriteria1Solver(BaseSolver):
             print("\nNo optimal solution found.")
             return
 
-        center_quality_functional = 0
+        center_functionality = 0
         for e, (element) in enumerate(self.data.elements):
-            tab_out(f"\nInput data for element {format_tensor(element.config.id)}", (
-                ("Element Functional Coefficients", format_tensor(element.coeffs_functional)),
-                ("Center Functional Coefficients for element", format_tensor(self.data.coeffs_functional[e])),
-                ("Element Aggregated Plan Costs", format_tensor(element.aggregated_plan_costs)),
-                ("Element Resource Constraints", format_tensor(element.resource_constraints)),
-                ("Element Aggregated Plan Times", format_tensor(element.aggregated_plan_times)),
-                ("Element Directive Terms", format_tensor(element.directive_terms)),
-                ("Element Number of Directive Products", format_tensor(element.num_directive_products)),
-                ("Element Fines for Deadline", format_tensor(element.fines_for_deadline)),
-                ("Element Free Order", format_tensor(element.config.free_order)),
-                ("Element Type", format_tensor(element.config.type)),
+            tab_out(f"\nInput data for element {stringify(element.config.id)}", (
+                ("Element Functional Coefficients", stringify(element.coeffs_functional)),
+                ("Center Functional Coefficients for element", stringify(self.data.coeffs_functional[e])),
+                ("Element Aggregated Plan Costs", stringify(element.aggregated_plan_costs)),
+                ("Element Resource Constraints", stringify(element.resource_constraints)),
+                ("Element Aggregated Plan Times", stringify(element.aggregated_plan_times)),
+                ("Element Directive Terms", stringify(element.directive_terms)),
+                ("Element Number of Directive Products", stringify(element.num_directive_products)),
+                ("Element Fines for Deadline", stringify(element.fines_for_deadline)),
+                ("Element Free Order", stringify(element.config.free_order)),
+                ("Element Type", stringify(element.config.type)),
             ))
 
-            tab_out(f"\nSolution for element {format_tensor(element.config.id)}", (
-                ("y_e", format_tensor(dict_solved["y"][e])),
-                ("z_e", format_tensor(dict_solved["z"][e])),
-                ("t_0_e", format_tensor(dict_solved["t_0"][e])),
-                ("order", format_tensor(self.order[e])),
+            tab_out(f"\nSolution for element {stringify(element.config.id)}", (
+                ("y_e", stringify(dict_solved["y"][e])),
+                ("z_e", stringify(dict_solved["z"][e])),
+                ("t_0_e", stringify(dict_solved["t_0"][e])),
+                ("order", stringify(self.order[e])),
             ))
 
             # max (C_e^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
-            element_quality_functional = (sum(element.coeffs_functional[i] * dict_solved["y"][e][i]
-                                              for i in range(element.config.num_decision_variables))
-                                          - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
-                                                for j in range(element.config.num_aggregated_products)))
+            element_functionality = (sum(element.coeffs_functional[i] * dict_solved["y"][e][i]
+                                         for i in range(element.config.num_decision_variables))
+                                     - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
+                                           for j in range(element.config.num_aggregated_products)))
 
-            print(f"\nElement {format_tensor(element.config.id)} quality functionality: {format_tensor(element_quality_functional)}")
+            print(f"\nElement {stringify(element.config.id)} quality functionality: {stringify(element_functionality)}")
 
             # max (VS_COEFFS_CENTER_FUNCTIONAL[e]^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
-            center_quality_functional += (sum(self.data.coeffs_functional[e][i] * dict_solved["y"][e][i]
-                                              for i in range(element.config.num_decision_variables))
-                                          - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
-                                                for j in range(element.config.num_aggregated_products)))
+            center_functionality += (sum(self.data.coeffs_functional[e][i] * dict_solved["y"][e][i]
+                                         for i in range(element.config.num_decision_variables))
+                                     - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
+                                           for j in range(element.config.num_aggregated_products)))
 
-        print(f"\nCenter (first criteria) quality functionality: {format_tensor(center_quality_functional)}")
+        print(f"\nCenter (first criteria) quality functionality: {stringify(center_functionality)}")

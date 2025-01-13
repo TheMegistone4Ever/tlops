@@ -72,7 +72,7 @@ pip install numpy ortools tabulate
 The system can be run using the main script:
 
 ```python
-python src/main.py
+    python src/main.py
 ```
 
 ### 4.2 Configuration
@@ -90,7 +90,6 @@ adjust:
 
 Currently, Criteria 1 and 2 are fully implemented:
 class CenterCriteria1Solver:
-pass
 
 ```python
 # Using Criteria 1
@@ -99,7 +98,7 @@ solver_1.setup()
 solver_1.print_results()
 
 # Using Criteria 2
-solver_2 = CenterCriteria2Solver(system_data, delta=0.1)
+solver_2 = CenterCriteria2Solver(system_data, delta=[.1, .3, ...])
 solver_2.setup()
 solver_2.print_results()
 ```

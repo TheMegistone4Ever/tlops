@@ -17,7 +17,7 @@ def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str]
     print(tabulate(data, headers, "grid"))
 
 
-def format_tensor(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], indent: int = 4, precision: int = 2) -> str:
+def stringify(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], indent: int = 4, precision: int = 2) -> str:
     """
     Formats n-dimensional tensors (nested lists/arrays) for better readability.
 
@@ -30,11 +30,11 @@ def format_tensor(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], inden
         str: Formatted string representation of the tensor
 
     Examples:
-        >>> format_tensor(42)
+        >>> stringify(42)
         42
-        >>> format_tensor([1, 2, 3])
+        >>> stringify([1, 2, 3])
         [1, 2, 3]
-        >>> format_tensor([[1, 2], [3, 4]])
+        >>> stringify([[1, 2], [3, 4]])
         [
             [1, 2],
             [3, 4]
@@ -157,10 +157,10 @@ if __name__ == "__main__":
     tensor_3d_int = [[[1, 2], [3, 4]], [[5, 6], [7, 8]]]
     tensor_3d_float = array(tensor_3d_int, dtype=float) + .123456789
 
-    print(f"Number:\n{format_tensor(num_0d)}", end="\n\n")
-    print(f"1D List:\n{format_tensor(list_1d)}", end="\n\n")
-    print(f"2D List:\n{format_tensor(list_2d)}", end="\n\n")
-    print(f"1D Array:\n{format_tensor(array_1d)}", end="\n\n")
-    print(f"2D Array:\n{format_tensor(array_2d)}", end="\n\n")
-    print(f"3D Tensor (int):\n{format_tensor(tensor_3d_int)}", end="\n\n")
-    print(f"3D Tensor (float, 6 d.p.):\n{format_tensor(tensor_3d_float, precision=6)}", end="\n\n")
+    print(f"Number:\n{stringify(num_0d)}", end="\n\n")
+    print(f"1D List:\n{stringify(list_1d)}", end="\n\n")
+    print(f"2D List:\n{stringify(list_2d)}", end="\n\n")
+    print(f"1D Array:\n{stringify(array_1d)}", end="\n\n")
+    print(f"2D Array:\n{stringify(array_2d)}", end="\n\n")
+    print(f"3D Tensor (int):\n{stringify(tensor_3d_int)}", end="\n\n")
+    print(f"3D Tensor (float, 6 d.p.):\n{stringify(tensor_3d_float, precision=6)}", end="\n\n")

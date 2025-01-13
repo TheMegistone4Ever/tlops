@@ -67,7 +67,7 @@ class ElementSolver(BaseSolver):
     def setup_constraints(self) -> None:
         """Set up constraints for the element problem."""
 
-        T_e = get_completion_times(self.data, self.y_e, self.t_0_e)
+        T_e = get_completion_times(self.data, self.y_e, self.t_0_e, self.order_e)
 
         # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
         for i in range(self.data.config.num_constraints):
@@ -77,13 +77,10 @@ class ElementSolver(BaseSolver):
                 <= self.data.resource_constraints[i]
             )
 
-        # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
-        for i in range(1, self.data.config.num_aggregated_products):
-            self.solver.Add(
-                self.t_0_e[self.order_e[i]] >= self.t_0_e[self.order_e[0]] +
-                sum(self.data.aggregated_plan_times[self.order_e[j]] * self.y_e[self.order_e[j]]
-                    for j in range(i))
-            )
+        if self.data.config.type == 1:
+            # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
+            for i in range(self.data.config.num_aggregated_products):
+                self.solver.Add(self.t_0_e[self.order_e[i]] >= T_e[i])
 
         # If n2_e == 0, skip the following constraints
         if self.data.config.num_soft_deadline_products != 0:
@@ -153,6 +150,7 @@ class ElementSolver(BaseSolver):
             ("Element Number of Directive Products", format_tensor(self.data.num_directive_products)),
             ("Element Fines for Deadline", format_tensor(self.data.fines_for_deadline)),
             ("Element Free Order", format_tensor(self.data.config.free_order)),
+            ("Element Type", format_tensor(self.data.config.type)),
         ))
 
         tab_out(f"\nSolution for element {format_tensor(self.data.config.id)}", (

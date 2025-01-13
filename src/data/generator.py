@@ -32,6 +32,7 @@ class DataGenerator:
             num_soft_deadline_products=self.config.NUM_SOFT_DEADLINE_PRODUCTS[element_idx],
             num_constraints=m,
             free_order=np.random.choice([True, False]),
+            type=np.random.choice([0, 1], p=[.4, .6]),
         )
 
         element_data = ElementData(

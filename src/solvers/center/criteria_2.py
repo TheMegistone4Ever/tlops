@@ -80,7 +80,7 @@ class CenterCriteria2Solver(BaseSolver):
         """Set up optimization constraints."""
 
         for e, (element) in enumerate(self.data.elements):
-            T_e = get_completion_times(element, self.y[e], self.t_0[e])
+            T_e = get_completion_times(element, self.y[e], self.t_0[e], self.order[e])
 
             # Resource constraints: MS_AGGREGATED_PLAN_COSTS[e] * y_e <= VS_RESOURCE_CONSTRAINTS[e]
             for i in range(element.config.num_constraints):
@@ -90,13 +90,10 @@ class CenterCriteria2Solver(BaseSolver):
                     <= element.resource_constraints[i]
                 )
 
-            # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
-            for i in range(1, element.config.num_aggregated_products):
-                self.solver.Add(
-                    self.t_0[e][self.order[e][i]] >= self.t_0[e][self.order[e][0]] +
-                    sum(element.aggregated_plan_times[self.order[e][j]] * self.y[e][self.order[e][j]]
-                        for j in range(i))
-                )
+            if element.config.type == 1:
+                # Times dependencies constraints: t_0_e_i >= t_0_e_{i-1} + sum_j={0..i-1}(VS_AGGREGATED_PLAN_TIMES[e][j] * y_e[j]), i=1..n1_e
+                for i in range(element.config.num_aggregated_products):
+                    self.solver.Add(self.t_0[e][self.order[e][i]] >= T_e[i])
 
             # If n2_e == 0, skip the following constraints
             if element.config.num_soft_deadline_products != 0:
@@ -193,6 +190,7 @@ class CenterCriteria2Solver(BaseSolver):
                 ("Element Number of Directive Products", format_tensor(element.num_directive_products)),
                 ("Element Fines for Deadline", format_tensor(element.fines_for_deadline)),
                 ("Element Free Order", format_tensor(element.config.free_order)),
+                ("Element Type", format_tensor(element.config.type)),
             ))
 
             tab_out(f"\nSolution for element {format_tensor(element.config.id)}", (
@@ -204,16 +202,16 @@ class CenterCriteria2Solver(BaseSolver):
 
             # max (C_e^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
             element_quality_functional = (sum(element.coeffs_functional[i] * dict_solved["y"][e][i]
-                                                for i in range(element.config.num_decision_variables))
-                                            - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
-                                                    for j in range(element.config.num_aggregated_products)))
+                                              for i in range(element.config.num_decision_variables))
+                                          - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
+                                                for j in range(element.config.num_aggregated_products)))
 
             print(f"\nElement {format_tensor(element.config.id)} quality functionality: {format_tensor(element_quality_functional)}")
 
             # max (VS_COEFFS_CENTER_FUNCTIONAL[e]^T * y_e - sum_j={1..n1_e}(FINES_FOR_DEADLINE[e][j] * z_e_j))
             center_quality_functional += (sum(self.data.coeffs_functional[e][i] * dict_solved["y"][e][i]
-                                     for i in range(element.config.num_decision_variables))
-                                 - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
-                                       for j in range(element.config.num_aggregated_products)))
+                                              for i in range(element.config.num_decision_variables))
+                                          - sum(element.fines_for_deadline[j] * dict_solved["z"][e][j]
+                                                for j in range(element.config.num_aggregated_products)))
 
         print(f"\nCenter (second criteria) quality functionality: {format_tensor(center_quality_functional)}")

@@ -1,4 +1,5 @@
 from dataclasses import replace
+from enum import ReprEnum
 from numbers import Number
 from typing import Union, List, Any, Sequence, Optional, TypeVar, Protocol, Iterable
 
@@ -16,7 +17,7 @@ def tab_out(subscription: str, data: Sequence[Sequence[str]], headers: List[str]
     print(tabulate(data, headers, "grid"))
 
 
-def format_tensor(tensor: Union[Number, List[Any], ndarray], indent: int = 4, precision: int = 2) -> str:
+def format_tensor(tensor: Union[ReprEnum, Number, Iterable[Any], ndarray], indent: int = 4, precision: int = 2) -> str:
     """
     Formats n-dimensional tensors (nested lists/arrays) for better readability.
 
@@ -58,6 +59,10 @@ def format_tensor(tensor: Union[Number, List[Any], ndarray], indent: int = 4, pr
 
     def format_recursive(x: Any, level: int = 0) -> str:
         """Recursively format nested structures"""
+
+        # Handle enums with custom __str__ method
+        if isinstance(x, ReprEnum):
+            return str(x)
 
         # Base case: handle numbers
         if isinstance(x, Number):

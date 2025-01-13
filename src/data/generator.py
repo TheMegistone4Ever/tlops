@@ -1,7 +1,7 @@
 import numpy as np
 
 from models.center import CenterData, CenterConfig
-from models.element import ElementData, ElementConfig
+from models.element import ElementData, ElementConfig, ElementType
 from utils.assertions import assert_positive
 from .config import SystemConfig
 
@@ -32,7 +32,7 @@ class DataGenerator:
             num_soft_deadline_products=self.config.NUM_SOFT_DEADLINE_PRODUCTS[element_idx],
             num_constraints=m,
             free_order=np.random.choice([True, False]),
-            type=np.random.choice([0, 1], p=[.4, .6]),
+            type=ElementType(np.random.choice([0, 1], p=[.4, .6])),
         )
 
         element_data = ElementData(

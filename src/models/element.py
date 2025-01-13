@@ -5,8 +5,13 @@ from numpy import ndarray
 
 
 class ElementType(IntEnum):
+    """Enumeration of element types in the system."""
+
     PARALLEL = 0
     SEQUENTIAL = 1
+
+    def __str__(self):
+        return f"{self.__class__.__name__}.{self.name}"
 
 
 @dataclass(frozen=True)

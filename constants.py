@@ -1,9 +1,0 @@
-NUM_ELEMENTS = 3  # K
-NUM_DECISION_VARIABLES = [6, 4, 3]  # n
-NUM_AGGREGATED_PRODUCTS = [5, 4, 2]  # n1 <= n
-NUM_SOFT_DEADLINE_PRODUCTS = [3, 4, 1]  # n2 <= n1
-NUM_CONSTRAINTS = [4, 2, 3]  # m
-FREE_ORDER = True
-
-# for 2'nd criteria
-DELTA = 10

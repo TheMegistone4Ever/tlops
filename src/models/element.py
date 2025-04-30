@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import IntEnum
+from enum import IntEnum, auto
 
 from numpy import ndarray
 
@@ -7,8 +7,8 @@ from numpy import ndarray
 class ElementType(IntEnum):
     """Enumeration of element types in the system."""
 
-    PARALLEL = 0
-    SEQUENTIAL = 1
+    PARALLEL = auto()
+    SEQUENTIAL = auto()
 
     def __str__(self):
         return f"{self.__class__.__name__}.{self.name}"

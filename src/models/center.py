@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-import numpy as np
+from numpy import ndarray
 
 from .element import ElementData
 
@@ -18,5 +18,5 @@ class CenterData:
     """Data container for center-specific optimization parameters."""
 
     config: CenterConfig
-    coeffs_functional: List[np.ndarray]
+    coeffs_functional: List[ndarray]
     elements: List[ElementData]

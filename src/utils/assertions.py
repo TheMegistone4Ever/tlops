@@ -1,6 +1,6 @@
 from typing import Any, List, TypeVar
 
-import numpy as np
+from numpy import ndarray
 
 T = TypeVar("T")
 
@@ -17,7 +17,7 @@ def assert_non_negative(value: Any, name: str = "") -> None:
     assert float(value) >= 0, f"Value {name} must be non-negative, got {value}"
 
 
-def assert_valid_dimensions(arrays: List[np.ndarray],
+def assert_valid_dimensions(arrays: List[ndarray],
                             expected_dims: List[int | tuple[int]],
                             names: List[str]) -> None:
     """Assert that arrays have valid dimensions."""

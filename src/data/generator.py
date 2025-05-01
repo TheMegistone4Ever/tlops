@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import random
 
 from models.center import CenterData, CenterConfig
 from models.element import ElementData, ElementConfig, ElementType
@@ -16,7 +16,7 @@ class DataGenerator:
         for i, (n) in enumerate(config.NUM_DECISION_VARIABLES):
             assert_positive(n, f"NUM_DECISION_VARIABLES[{i}]")
         self.config = config
-        np.random.seed(seed)
+        random.seed(seed)
 
     def _generate_element_data(self, element_idx: int) -> ElementData:
         """Generate random data for a single element."""
@@ -31,19 +31,19 @@ class DataGenerator:
             num_aggregated_products=n1,
             num_soft_deadline_products=self.config.NUM_SOFT_DEADLINE_PRODUCTS[element_idx],
             num_constraints=m,
-            free_order=np.random.choice([True, False]),
-            type=ElementType(np.random.choice([0, 1], p=[.4, .6])),
+            free_order=random.choice([True, False]),
+            type=ElementType(random.choice([0, 1], p=[.4, .6])),
         )
 
         element_data = ElementData(
             config=element_config,
-            coeffs_functional=np.random.randint(1, 10, n),
-            resource_constraints=np.random.randint(5, 10, m) * 100,
-            aggregated_plan_costs=np.random.randint(1, 5, (m, n)),
-            aggregated_plan_times=np.random.randint(1, 5, n1),
-            directive_terms=np.random.randint(5, 25, n1) * 5,
-            num_directive_products=np.random.randint(1, 5, n1),
-            fines_for_deadline=np.random.randint(1, 10, n1),
+            coeffs_functional=random.randint(1, 10, n),
+            resource_constraints=random.randint(5, 10, m) * 100,
+            aggregated_plan_costs=random.randint(1, 5, (m, n)),
+            aggregated_plan_times=random.randint(1, 5, n1),
+            directive_terms=random.randint(5, 25, n1) * 5,
+            num_directive_products=random.randint(1, 5, n1),
+            fines_for_deadline=random.randint(1, 10, n1),
         )
 
         return element_data
@@ -57,7 +57,7 @@ class DataGenerator:
         ]
 
         center_coeffs = [
-            np.random.randint(1, 3, self.config.NUM_DECISION_VARIABLES[i])
+            random.randint(1, 3, self.config.NUM_DECISION_VARIABLES[i])
             for i in range(self.config.NUM_ELEMENTS)
         ]
 

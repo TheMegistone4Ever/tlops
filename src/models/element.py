@@ -10,9 +10,6 @@ class ElementType(IntEnum):
     PARALLEL = auto()
     SEQUENTIAL = auto()
 
-    def __str__(self):
-        return f"{self.__class__.__name__}.{self.name}"
-
 
 @dataclass(frozen=True)
 class ElementConfig:
